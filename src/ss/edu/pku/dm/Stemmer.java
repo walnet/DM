@@ -36,6 +36,7 @@ package ss.edu.pku.dm;
 
 import java.io.*;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Stemmer, implementing the Porter Stemming Algorithm
@@ -45,7 +46,7 @@ import java.util.HashSet;
  * the various stem(something) methods.
  */
 
-class Stemmer {
+public class Stemmer {
 	private char[] b;
 	private int i, /* offset into b */
 	i_end, /* offset to end of stemmed word */
@@ -573,8 +574,8 @@ class Stemmer {
 		String b = null;
 		stopwords = new HashSet<String>();
 		try {
-			br = new BufferedReader(new FileReader("./bin/stopwords.txt"));
-			bw = new BufferedWriter(new FileWriter("./bin/log.txt"));
+			br = new BufferedReader(new FileReader("bin/stopwords.txt"));
+			bw = new BufferedWriter(new FileWriter("bin/log.txt"));
 			while (null != (b = br.readLine())) {
 				b.trim();
 				if (0 < b.length() && '#' != b.charAt(0)) {
@@ -625,13 +626,14 @@ class Stemmer {
 	 * must be done outside the Stemmer class. Usage: Stemmer file-name
 	 * file-name ...
 	 */
-	public static void main(String[] args) {
+	public static void doStem(List<String> fpaths) {
 		char[] w = new char[501];
 		Stemmer s = new Stemmer();
 		s.readStopword();
-		for (int i = 0; i < args.length; i++)
+		for (int i = 0; i < fpaths.size(); ++i) {
+			System.out.print(fpaths.get(i) + ": ");
 			try {
-				FileInputStream in = new FileInputStream(args[i]);
+				FileInputStream in = new FileInputStream(fpaths.get(i));
 
 				try {
 					while (true)
@@ -685,12 +687,14 @@ class Stemmer {
 						System.out.print(',');
 					}
 				} catch (IOException e) {
-					System.out.println("error reading " + args[i]);
+					System.out.println("error reading " + fpaths.get(i));
 					break;
 				}
 			} catch (FileNotFoundException e) {
-				System.out.println("file " + args[i] + " not found");
+				System.out.println("file " + fpaths.get(i) + " not found");
 				break;
 			}
+			System.out.println('.');
+		}
 	}
 }
