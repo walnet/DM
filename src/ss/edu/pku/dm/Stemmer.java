@@ -35,6 +35,7 @@ package ss.edu.pku.dm;
  */
 
 import java.io.*;
+import java.util.HashSet;
 
 /**
  * Stemmer, implementing the Porter Stemming Algorithm
@@ -49,6 +50,7 @@ class Stemmer {
 	private int i, /* offset into b */
 	i_end, /* offset to end of stemmed word */
 	j, k;
+	private HashSet<String> stopwords;
 	private static final int INC = 50;
 
 	/* unit of size whereby b is increased */
@@ -562,6 +564,61 @@ class Stemmer {
 	}
 
 	/**
+	 * Remove stopwords. read stopwords from a file.
+	 * Added by hector.
+	 */
+	public void readStopword() {
+		BufferedReader br = null;
+		BufferedWriter bw = null;
+		String b = null;
+		stopwords = new HashSet<String>();
+		try {
+			br = new BufferedReader(new FileReader("./bin/stopwords.txt"));
+			bw = new BufferedWriter(new FileWriter("./bin/log.txt"));
+			while (null != (b = br.readLine())) {
+				b.trim();
+				if (0 < b.length() && '#' != b.charAt(0)) {
+					stopwords.add(b);
+					bw.write(b);
+					bw.newLine();
+					bw.flush();
+				}
+				//System.out.println(b);
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				bw.close();
+				br.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * Judge stopword.
+	 * Added by hector.
+	 */
+	public boolean isStopword() {
+		String word = new String(b, 0, i);
+		if (stopwords.contains(word))
+			return true;
+		return false;
+	}
+
+	/**
+	 * Reset i to 0. Just a patch.
+	 * Added by hector.
+	 */	
+	public void resetIndex() {
+		i = 0;
+	}
+
+	/**
 	 * Test program for demonstrating the Stemmer. It reads text from a a list
 	 * of files, stems each word, and writes the result to standard output. Note
 	 * that the word stemmed is expected to be in lower case: forcing lower case
@@ -571,6 +628,7 @@ class Stemmer {
 	public static void main(String[] args) {
 		char[] w = new char[501];
 		Stemmer s = new Stemmer();
+		s.readStopword();
 		for (int i = 0; i < args.length; i++)
 			try {
 				FileInputStream in = new FileInputStream(args[i]);
@@ -596,8 +654,11 @@ class Stemmer {
 									/* or, to test add(char[] w, int j) */
 									/* s.add(w, j); */
 
-									s.stem();
-									{
+									if (s.isStopword()) {
+										s.resetIndex();
+									} else {
+										s.stem();
+
 										String u;
 
 										/* and now, to test toString() : */
@@ -620,7 +681,8 @@ class Stemmer {
 						}
 						if (ch < 0)
 							break;
-						System.out.print((char) ch);
+						// System.out.print((char) ch);
+						System.out.print(',');
 					}
 				} catch (IOException e) {
 					System.out.println("error reading " + args[i]);
