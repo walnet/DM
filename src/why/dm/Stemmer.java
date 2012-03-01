@@ -1,4 +1,4 @@
-package ss.edu.pku.dm;
+package why.dm;
 
 /*
 
@@ -36,7 +36,6 @@ package ss.edu.pku.dm;
 
 import java.io.*;
 import java.util.HashSet;
-import java.util.List;
 
 /**
  * Stemmer, implementing the Porter Stemming Algorithm
@@ -625,15 +624,13 @@ public class Stemmer {
 	 * that the word stemmed is expected to be in lower case: forcing lower case
 	 * must be done outside the Stemmer class. Usage: Stemmer file-name
 	 * file-name ...
-	 */
-	public static void doStem(List<String> fpaths) {
+	 *//*
+	public static void main(String[] args) {
 		char[] w = new char[501];
 		Stemmer s = new Stemmer();
-		s.readStopword();
-		for (int i = 0; i < fpaths.size(); ++i) {
-			System.out.print(fpaths.get(i) + ": ");
+		for (int i = 0; i < args.length; i++)
 			try {
-				FileInputStream in = new FileInputStream(fpaths.get(i));
+				FileInputStream in = new FileInputStream(args[i]);
 
 				try {
 					while (true)
@@ -649,31 +646,28 @@ public class Stemmer {
 									j++;
 								ch = in.read();
 								if (!Character.isLetter((char) ch)) {
-									/* to test add(char ch) */
+									 to test add(char ch) 
 									for (int c = 0; c < j; c++)
 										s.add(w[c]);
 
-									/* or, to test add(char[] w, int j) */
-									/* s.add(w, j); */
+									 or, to test add(char[] w, int j) 
+									 s.add(w, j); 
 
-									if (s.isStopword()) {
-										s.resetIndex();
-									} else {
-										s.stem();
-
+									s.stem();
+									{
 										String u;
 
-										/* and now, to test toString() : */
+										 and now, to test toString() : 
 										u = s.toString();
 
-										/*
+										
 										 * to test getResultBuffer(),
 										 * getResultLength() :
-										 */
-										/*
+										 
+										
 										 * u = new String(s.getResultBuffer(),
 										 * 0, s.getResultLength());
-										 */
+										 
 
 										System.out.print(u);
 									}
@@ -683,18 +677,15 @@ public class Stemmer {
 						}
 						if (ch < 0)
 							break;
-						// System.out.print((char) ch);
-						System.out.print(',');
+						System.out.print((char) ch);
 					}
 				} catch (IOException e) {
-					System.out.println("error reading " + fpaths.get(i));
+					System.out.println("error reading " + args[i]);
 					break;
 				}
 			} catch (FileNotFoundException e) {
-				System.out.println("file " + fpaths.get(i) + " not found");
+				System.out.println("file " + args[i] + " not found");
 				break;
 			}
-			System.out.println('.');
-		}
-	}
+	}*/
 }
