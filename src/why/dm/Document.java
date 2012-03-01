@@ -1,5 +1,5 @@
 /**
- * 
+ * Copyright (C) 2012 why
  */
 package why.dm;
 
@@ -9,9 +9,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
+ * @version $Rev$ $Date$
  * @abstract The Document class.
  * @author hector
- *
  */
 public class Document {
 	// ÎÄ¼þÂ·¾¶

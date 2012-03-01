@@ -1,12 +1,12 @@
 /**
- * 
+ * Copyright (C) 2012 why
  */
 package why.dm;
 
 /**
+ * @version $Rev$ $Date$
  * @abstract The Main class.
  * @author hector
- *
  */
 public final class Main {
 

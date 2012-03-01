@@ -1,3 +1,6 @@
+/**
+ * Copyright (C) 2012 why
+ */
 package why.dm;
 
 import java.io.File;
@@ -10,8 +13,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
- * @author qinhuiwang 本类的作用是遍历文件后来提取特征
- * 
+ * @version $Rev$ $Date$
+ * @abstract 本类的作用是遍历文件后来提取特征
+ * @author qinhuiwang
  */
 public class FeatureExtraction {
 	// 属性集合，包括名字和序号
