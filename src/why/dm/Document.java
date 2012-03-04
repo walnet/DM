@@ -9,73 +9,82 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
- * @version $Rev$ $Date$
- * @abstract The Document class.
+ * The Document class
+ * 
  * @author hector
+ * @version $Rev$ $Date$
  */
 public class Document {
-	// ÎÄ¼şÂ·¾¶
+	// æ–‡ä»¶è·¯å¾„
 	private String path;
-	// ËùÊô·ÖÀà
+	// æ‰€å±åˆ†ç±»
 	private int classify = -1;
-	// °üÀ¨ĞòºÅºÍ¼ÆÊı
-	private HashMap<Integer, Integer> words = new HashMap<Integer, Integer>();
-	private LinkedList<Integer> wordIndices = new LinkedList<Integer>();
-	
+	// åŒ…æ‹¬åºå·å’Œè®¡æ•°
+	private HashMap<Integer, Integer> hits = new HashMap<Integer, Integer>();
+	private LinkedList<Integer> hitIndices = new LinkedList<Integer>();
+
 	public String getPath() {
 		return path;
 	}
-	
+
 	public void setPath(String value) {
 		path = value;
 	}
-	
+
 	public int getClassify() {
 		return classify;
 	}
-	
+
 	public void setClassify(int value) {
 		classify = value;
 	}
-	
+
+	public HashMap<Integer, Integer> getHits() {
+		return hits;
+	}
+
 	public void InsertWord(Integer index) {
-		wordIndices.push(index);
-		if (words.containsKey(index)) {
-			Integer count = words.remove(index);
-			words.put(index, ++count);
+		hitIndices.push(index);
+		if (hits.containsKey(index)) {
+			Integer count = hits.remove(index);
+			hits.put(index, ++count);
 		} else {
-			words.put(index, 1);
+			hits.put(index, 1);
 		}
 	}
-	
+
 	public void trace() {
-		System.out.print("Class " + String.valueOf(classify) + ">> ");
-		Iterator<Integer> iter = wordIndices.descendingIterator();
+		System.out.print("Class " + classify + ">> ");
+		Iterator<Integer> iter = hitIndices.descendingIterator();
 		while (iter.hasNext()) {
 			Integer index = iter.next();
-			System.out.print(index + ": " + words.get(index) + "; ");
+			System.out.print(index + ": " + hits.get(index) + "; ");
 		}
 		System.out.println();
 	}
-	
-	public void trace(ArrayList<String> firstSubDirNames, ArrayList<String> wordNames) {
-		String str = firstSubDirNames.get(classify);
-		System.out.print(str + "(" + String.valueOf(classify) + ") " + path.substring(path.lastIndexOf('\\') + 1) + ">> ");
-		Iterator<Integer> iter = wordIndices.descendingIterator();
+
+	public void trace(ArrayList<String> classifyNames,
+			ArrayList<String> termNames) {
+		String str = classifyNames.get(classify);
+		int lastIndex = path.lastIndexOf('\\');
+		int lastIndex2 = path.lastIndexOf('/');
+		if (lastIndex2 > lastIndex)
+			lastIndex = lastIndex2;
+		System.out.print(str + "(" + classify + ") "
+				+ path.substring(lastIndex + 1) + ">> ");
+		Iterator<Integer> iter = hitIndices.descendingIterator();
 		while (iter.hasNext()) {
 			Integer index = iter.next();
-			System.out.print(index + "(" + wordNames.get(index) + "): " + words.get(index) + "; ");
+			System.out.print(index + "(" + termNames.get(index) + "): "
+					+ hits.get(index) + "; ");
 		}
 		System.out.println();
 	}
-	
-/*
-	protected HashMap<Integer, Integer> getWords() {
-		return words;
-	}
-	
-	protected void setWords(HashMap<Integer, Integer> value) {
-		words = value;
-	}
-*/
+
+	/*
+	 * protected HashMap<Integer, Integer> getWords() { return words; }
+	 * 
+	 * protected void setWords(HashMap<Integer, Integer> value) { words = value;
+	 * }
+	 */
 }

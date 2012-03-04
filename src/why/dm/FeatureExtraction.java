@@ -13,43 +13,96 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
- * @version $Rev$ $Date$
- * @abstract ±¾ÀàµÄ×÷ÓÃÊÇ±éÀúÎÄ¼şºóÀ´ÌáÈ¡ÌØÕ÷
+ * æœ¬ç±»çš„ä½œç”¨æ˜¯éå†æ–‡ä»¶åæ¥æå–ç‰¹å¾
+ * 
  * @author qinhuiwang
+ * @version $Rev$ $Date$
  */
 public class FeatureExtraction {
-	// ÊôĞÔ¼¯ºÏ£¬°üÀ¨Ãû×ÖºÍĞòºÅ
-	private HashMap<String, Integer> wordHashs = new HashMap<String, Integer>();
-	// Name String of the attributes. Only for debug.
-	private ArrayList<String> wordNames = new ArrayList<String>();
-	// Index of wordNames. Only for debug.
-	private int currentWordNamesIndex = 0;
-	// ÎÄµµÌØÕ÷¼¯ºÏ
-	private LinkedList<Document> documents = new LinkedList<Document>();
-	// ·ÖÀàÃû£¬Ò²ÊÇµÚÒ»²ã×ÓÎÄ¼ş¼ĞµÄÃû³Æ
+	
+	// ä»¥ä¸‹ä¸ºæ‰€æœ‰æ–‡æ¡£å…±æœ‰ï¼ˆåŒ…æ‹¬è®­ç»ƒå’Œæµ‹è¯•ï¼‰
+	
+	// æ‰€æœ‰æ–‡æ¡£é›†åˆ
+	private ArrayList<LinkedList<Document>> allDocuments = new ArrayList<LinkedList<Document>>();
+	// æ‰€æœ‰termé›†åˆï¼ŒåŒ…æ‹¬åå­—å’Œåºå·
+	private HashMap<String, Integer> terms = new HashMap<String, Integer>();
+	// Name string of all terms. Only for debug.
+	private ArrayList<String> termIndices = new ArrayList<String>();
+	// Classify name. Also first-layer sub folder name.
 	private ArrayList<String> classifyNames = new ArrayList<String>();
-	private boolean debugTrace = true;
+	
+
+	//Feature feature = new Feature();
+	Feature trainingFeature = new Feature();
+	//Feature testFeature = new Feature();
+
+	// Index of termsIndices. Only for debug.
+	private int currentTermIndex = 0;
+
+	// æµ‹è¯•æ–‡æ¡£é›†åˆ
+	private LinkedList<Document> testDocuments = new LinkedList<Document>();
+	// æµ‹è¯•æ–‡æ¡£æ¯”ä¾‹ï¼ˆå‰©ä¸‹çš„éƒ½æ˜¯è®­ç»ƒæ–‡æ¡£ï¼‰
+	private double testProportion = 0.1;
+
+	// æ‰“å¼€è°ƒè¯•
+	private boolean debugTrace = false;
 	private int debugCount = 0;
 
+	public HashMap<String, Integer> getTerms() {
+		return terms;
+	}
+
+	public ArrayList<String> getTermIndices() {
+		return termIndices;
+	}
+
+	public ArrayList<String> getClassifyNames() {
+		return classifyNames;
+	}
+
+	//public Feature getFeature() {
+	//	return feature;
+	//}
+
+	public Feature getTrainingFeature() {
+		return trainingFeature;
+	}
+
+	//public Feature getTestFeature() {
+	//	return testFeature;
+	//}
+
+	public LinkedList<Document> getTestDocuments() {
+		return testDocuments;
+	}
+	
+	public void clear() {
+		allDocuments.clear();
+		terms.clear();
+		termIndices.clear();
+		trainingFeature.clear();
+		currentTermIndex = 0;
+		testDocuments.clear();
+		classifyNames.clear();
+	}
+
 	/**
-	 * ¶ÔÖ¸¶¨Ä¿Â¼ÏÂµÄÎÄ¼ş½øĞĞÌáÈ¡ÌØÕ÷
+	 * å¯¹æŒ‡å®šç›®å½•ä¸‹çš„æ–‡ä»¶è¿›è¡Œæå–ç‰¹å¾
 	 * 
 	 * @param dirPath
-	 * @return void
 	 */
 	public void extractFeacture(String dirPath) {
-		getTypesAndFilePaths(dirPath);
+		readTypesAndFilePaths(dirPath);
 		doStem();
 	}
 
 	/**
-	 * µİ¹é»ñÈ¡Ä¿Â¼ÖĞµÄÎÄ¼ş
+	 * é€’å½’è·å–ç›®å½•ä¸­çš„æ–‡ä»¶
 	 * 
 	 * @param dirPath
 	 * @param classify
-	 * @return void
 	 */
-	private void getDocumentList(String dirPath, int classify) {
+	private void readDocumentList(String dirPath, int classify) {
 		File dirFile = new File(dirPath);
 		File[] files = dirFile.listFiles();
 
@@ -58,153 +111,226 @@ public class FeatureExtraction {
 
 		for (int i = 0; i < files.length; i++) {
 			if (files[i].isDirectory())
-				getDocumentList(files[i].getAbsolutePath(), classify);
+				readDocumentList(files[i].getAbsolutePath(), classify);
 			else {
 				String fileNameStr = files[i].getAbsolutePath();
 				// System.out.println(fNameStr);
 				Document document = new Document();
 				document.setPath(fileNameStr);
 				document.setClassify(classify);
-				documents.add(document);
+				allDocuments.get(classify).add(document);
+				//documents().add(document);
+				//classifyDocuments.get(classify).add(document);
 			}
 		}
 	}
 
 	/**
-	 * ¸ù¾İÄ¿Â¼µÄÂ·¾¶£¬µÃµ½ÆäÄ¿Â¼ÏÂËùÓĞÎÄ¼şÂ·¾¶+Ãû³Æ£¬ÒÔ¼°µÚÒ»´Î×ÓÄ¿Â¼µÄÎÄ¼ş
+	 * æ ¹æ®ç›®å½•çš„è·¯å¾„ï¼Œå¾—åˆ°å…¶ç›®å½•ä¸‹æ‰€æœ‰æ–‡ä»¶è·¯å¾„+åç§°ï¼Œä»¥åŠç¬¬ä¸€æ¬¡å­ç›®å½•çš„æ–‡ä»¶
 	 * 
 	 * @param dirPath
-	 * @return void
 	 */
-	private void getTypesAndFilePaths(String dirPath) {
+	private void readTypesAndFilePaths(String dirPath) {
 		File dirFile = new File(dirPath);
 		File[] files = dirFile.listFiles();
 
 		if (files == null)
 			return;
-		documents.clear();
+		//documents.clear();
+		clear();
 		for (int i = 0; i < files.length; ++i) {
 			if (files[i].isDirectory()) {
+				allDocuments.add(new LinkedList<Document>());
+				readDocumentList(files[i].getAbsolutePath(), i);
 				classifyNames.add(files[i].getName());
-				getDocumentList(files[i].getAbsolutePath(), i);
 			}
 		}
 	}
 
 	/**
-	 * ´Ê·¨·ÖÎö¡¢È¥³ıÍ£ÓÃ´Ê¡¢ÓÃPorter Stemming Algorithm½øĞĞ´Ê¸ù»¹Ô­
-	 * 
-	 * @param void
-	 * @return void
+	 * è¯æ³•åˆ†æã€å»é™¤åœç”¨è¯ã€ç”¨Porter Stemming Algorithmè¿›è¡Œè¯æ ¹è¿˜åŸ
 	 */
 	public void doStem() {
 		char[] w = new char[501];
 		Stemmer s = new Stemmer();
 		s.readStopword();
-		Iterator<Document> iter = documents.iterator();
-		while (iter.hasNext()) {
-			Document document = iter.next();
-			if (debugTrace) {
-				System.out.print(document.getPath() + ": ");
-			}
-			try {
-				FileInputStream in = new FileInputStream(document.getPath());
+		for (int classify = 0; allDocuments.size() > classify; ++classify) {
 
+			Iterator<Document> iter = allDocuments.get(classify).iterator();
+			while (iter.hasNext()) {
+				Document currentDocument = iter.next();
+				if (debugTrace) {
+					System.out.print(currentDocument.getPath() + ": ");
+				}
 				try {
-					while (true)
+					FileInputStream in = new FileInputStream(
+							currentDocument.getPath());
+	
+					try {
+						while (true)
+	
+						{
+							int ch = in.read();
+							if (Character.isLetter((char) ch)) {
+								int j = 0;
+								while (true) {
+									ch = Character.toLowerCase((char) ch);
+									w[j] = (char) ch;
+									if (j < 500)
+										++j;
+									ch = in.read();
+									if (!Character.isLetter((char) ch)) {
+										/* to test add(char ch) */
+										for (int c = 0; c < j; c++)
+											s.add(w[c]);
+	
+										/* or, to test add(char[] w, int j) */
+										/* s.add(w, j); */
+	
+										if (s.isStopword()) {
+											s.resetIndex();
+										} else {
+											s.stem();
+	
+											String u;
+	
+											/* and now, to test toString() : */
+											u = s.toString();
+	
+											/*
+											 * to test getResultBuffer(),
+											 * getResultLength() :
+											 */
+											/*
+											 * u = new String(s.getResultBuffer(),
+											 * 0, s.getResultLength());
+											 */
+	
+											if (debugTrace) {
+												System.out.print(u);
+											}
 
-					{
-						int ch = in.read();
-						if (Character.isLetter((char) ch)) {
-							int j = 0;
-							while (true) {
-								ch = Character.toLowerCase((char) ch);
-								w[j] = (char) ch;
-								if (j < 500)
-									++j;
-								ch = in.read();
-								if (!Character.isLetter((char) ch)) {
-									/* to test add(char ch) */
-									for (int c = 0; c < j; c++)
-										s.add(w[c]);
+											// åŠ å…¥å…¨å±€ç´¢å¼•
+											Integer index = -1;
+											if (null == (index = terms.get(u))) {
+												terms.put(u, currentTermIndex);
+												index = currentTermIndex;
+												termIndices.add(u);
+												++currentTermIndex;
+											}
+/*
+											// åŠ å…¥åˆ†ç±»ç´¢å¼•
+											HashMap<Integer, Integer> currentClassifyHits = classifyHits
+													.get(currentDocument
+															.getClassify());
+											if (currentClassifyHits
+													.containsKey(index)) {
+												Integer original = currentClassifyHits
+														.get(index);
+												currentClassifyHits.put(index,
+														original + 1);
+											} else {
+												currentClassifyHits.put(index, 1);
+											}
+*/
+											// åŠ å…¥æ–‡æ¡£ç´¢å¼•
+											currentDocument.InsertWord(index);
 
-									/* or, to test add(char[] w, int j) */
-									/* s.add(w, j); */
-
-									if (s.isStopword()) {
-										s.resetIndex();
-									} else {
-										s.stem();
-
-										String u;
-
-										/* and now, to test toString() : */
-										u = s.toString();
-
-										/*
-										 * to test getResultBuffer(),
-										 * getResultLength() :
-										 */
-										/*
-										 * u = new String(s.getResultBuffer(),
-										 * 0, s.getResultLength());
-										 */
-
-										if (debugTrace) {
-											System.out.print(u);
 										}
-										Integer index = -1;
-										if (null == (index = wordHashs.get(u))) {
-											wordHashs.put(u, currentWordNamesIndex);
-											index = currentWordNamesIndex;
-											wordNames.add(u);
-											++currentWordNamesIndex;
-										}
-										document.InsertWord(index);
+										break;
 									}
-									break;
 								}
 							}
+							if (ch < 0)
+								break;
+							// System.out.print((char) ch);
+							if (debugTrace) {
+								System.out.print(',');
+							}
 						}
-						if (ch < 0)
-							break;
-						// System.out.print((char) ch);
-						if (debugTrace) {
-							System.out.print(',');
-						}
+					} catch (IOException e) {
+						// System.out.println("error reading " +
+						// currentDocument.getPath());
+						e.printStackTrace();
+						break;
 					}
-				} catch (IOException e) {
-					System.out.println("error reading " + document.getPath());
+					// documents.push(currentDocument);
+				} catch (FileNotFoundException e) {
+					// System.out.println("file " + currentDocument.getPath() +
+					// " not found");
+					e.printStackTrace();
 					break;
 				}
-				//documents.push(currentDocument);
-			} catch (FileNotFoundException e) {
-				System.out.println("file " + document.getPath() + " not found");
-				break;
+				if (debugTrace) {
+					System.out.println('.');
+				} else {
+					++debugCount;
+					if (0 == debugCount % 100) {
+						System.out.print(String.valueOf(debugCount) + " ");
+					}
+					if (0 == debugCount % 2000) {
+						System.out.println();
+					}
+				}
 			}
-			if (debugTrace) {
-				System.out.println('.');
-			} else {
-				++debugCount;
-				if (0 == debugCount % 100) {
-					System.out.print(String.valueOf(debugCount) + " ");
+
+		}
+	}
+
+	public void setTestProportion(double value) {
+		testProportion = value;
+	}
+
+	public void selectTestDocuments() {
+		// boolean testFull = false;
+		testDocuments.clear();
+		trainingFeature.clear();
+		for (int classify = 0; allDocuments.size() > classify; ++classify) {
+			trainingFeature.getClassifyHits().add(new HashMap<Integer, Integer>());
+			trainingFeature.getClassifyDocuments().add(new LinkedList<Document>());
+			int added = 0;
+			LinkedList<Document> currentClassifyDocuments = allDocuments.get(classify);
+			Iterator<Document> iterDocument = currentClassifyDocuments.iterator();
+			Document currentDocument;
+			while (iterDocument.hasNext()) {
+				currentDocument = iterDocument.next();
+				if ((double) added / (double) currentClassifyDocuments.size() <= testProportion) {
+					testDocuments.add(currentDocument);
+					++added;
+				} else {
+					trainingFeature.getClassifyDocuments().get(classify).add(currentDocument);
 				}
-				if (0 == debugCount % 2000) {
-					System.out.println();
+				
+				// å°†é¡¹åŠ å…¥åˆ†ç±»ç´¢å¼•
+				Iterator<Integer> iter = currentDocument.getHits().keySet().iterator();
+				while (iter.hasNext()) {
+					Integer currentKey = iter.next();
+					Integer currentCount = currentDocument.getHits().get(currentKey);
+					HashMap<Integer, Integer> currentClassifyHits = trainingFeature.getClassifyHits().get(classify);
+					if (currentClassifyHits.containsKey(currentKey)) {
+						Integer original = currentClassifyHits.get(currentKey);
+						currentClassifyHits.put(currentKey, original + currentCount);
+					} else {
+						currentClassifyHits.put(currentKey, currentCount);
+					}
 				}
+
 			}
 		}
 	}
-	
+
 	public void trace() {
-		for (int i = 0; documents.size() > i; ++i) {
-			documents.get(i).trace(classifyNames, wordNames);
+		for (int classify = 0; allDocuments.size() > classify; ++classify) {
+			LinkedList<Document> currentClassifyDocuments = allDocuments.get(classify);
+			Iterator<Document> iterDocument = currentClassifyDocuments.iterator();
+			while (iterDocument.hasNext()) {
+				iterDocument.next().trace(classifyNames, termIndices);
+			}
 		}
 	}
 
 	/**
 	 * @param args
-	 * @return void
 	 */
 	/*
 	 * public static void main(String[] args) {
