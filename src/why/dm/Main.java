@@ -55,8 +55,8 @@ public final class Main {
 		featureExtraction.extractFeacture("bin/newgroups");
 		featureExtraction.setTestProportion(0.1);
 		featureExtraction.selectTestDocuments();
-		System.out.println();
-		featureExtraction.trace();
+		//System.out.println();
+		//featureExtraction.trace();
 
 		// Naive Bayes classification
 		System.out.println();

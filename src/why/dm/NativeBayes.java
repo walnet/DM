@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
- * Naive Bayes classification
+ * Native Bayes classification
  * 
  * @author hector
  * @version $Rev$ $Date$
@@ -42,18 +42,17 @@ public class NativeBayes {
 			// getClassifyParam(i, diff, total);
 			// classifyDiffs.add(diff.value);
 			// classifyTotals.add(total.value);
-			int total = 0;
-			HashMap<Integer, Integer> currentclassifyHit = featureExtraction
-					.getTrainingFeature().getClassifyHits().get(classify);
-			Iterator<Integer> iter = currentclassifyHit.keySet().iterator();
-			while (iter.hasNext()) {
-				Integer currentTerm = iter.next();
-				total += currentclassifyHit.get(currentTerm);
-			}
 			if (debugTrace) {
-				System.out.println(classify + ">> Pc:" + Pcs.get(classify)
-						+ "; diff: " + currentclassifyHit.keySet().size()
-						+ "; total: " + total + ".");
+				System.out.println(classify
+						+ ">> Pc:"
+						+ Pcs.get(classify)
+						+ "; diff: "
+						+ featureExtraction.getTrainingFeature()
+								.getClassifyHits().get(classify).keySet()
+								.size()
+						+ "; total: "
+						+ featureExtraction.getTrainingFeature()
+								.getClassifyTotalHits().get(classify) + ".");
 			}
 		}
 		Iterator<Document> iter = featureExtraction.getTestDocuments()
@@ -118,21 +117,11 @@ public class NativeBayes {
 			if (null == currentTermClassifyHit)
 				currentTermClassifyHit = 0;
 
-			// 当前类别所有词出现次数总和
-			int totalClassifyHits = 0;
-			Iterator<Integer> iterAllTerm = currentClassifyHit.keySet()
-					.iterator();
-			while (iterAllTerm.hasNext()) {
-				Integer hit = currentClassifyHit.get(iterAllTerm.next());
-				if (null == hit)
-					hit = 0;
-				totalClassifyHits += hit;
-			}
-
 			// 累乘转成log累加
 			double numerator = 1 + currentTermClassifyHit;
 			double denominator = currentClassifyHit.keySet().size()
-					+ totalClassifyHits;
+					+ featureExtraction.getTrainingFeature()
+							.getClassifyTotalHits().get(classify);
 			if (0 != denominator) {
 				// System.out.println(lastDenominator);
 				// System.out.println(lastPwc);

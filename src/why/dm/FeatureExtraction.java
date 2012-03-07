@@ -286,8 +286,12 @@ public class FeatureExtraction {
 		testDocuments.clear();
 		trainingFeature.clear();
 		for (int classify = 0; allDocuments.size() > classify; ++classify) {
-			trainingFeature.getClassifyHits().add(new HashMap<Integer, Integer>());
-			trainingFeature.getClassifyDocuments().add(new LinkedList<Document>());
+			ArrayList<Integer> classifyTotalHits = trainingFeature.getClassifyTotalHits();
+			ArrayList<HashMap<Integer, Integer>> classifyHits = trainingFeature.getClassifyHits();
+			ArrayList<LinkedList<Document>> classifyDocuments = trainingFeature.getClassifyDocuments();
+			classifyTotalHits.add(0);
+			classifyHits.add(new HashMap<Integer, Integer>());
+			classifyDocuments.add(new LinkedList<Document>());
 			int added = 0;
 			LinkedList<Document> currentClassifyDocuments = allDocuments.get(classify);
 			Iterator<Document> iterDocument = currentClassifyDocuments.iterator();
@@ -298,7 +302,7 @@ public class FeatureExtraction {
 					testDocuments.add(currentDocument);
 					++added;
 				} else {
-					trainingFeature.getClassifyDocuments().get(classify).add(currentDocument);
+					classifyDocuments.get(classify).add(currentDocument);
 				}
 				
 				// 将项加入分类索引
@@ -306,13 +310,15 @@ public class FeatureExtraction {
 				while (iter.hasNext()) {
 					Integer currentKey = iter.next();
 					Integer currentCount = currentDocument.getHits().get(currentKey);
-					HashMap<Integer, Integer> currentClassifyHits = trainingFeature.getClassifyHits().get(classify);
+					HashMap<Integer, Integer> currentClassifyHits = classifyHits.get(classify);
 					if (currentClassifyHits.containsKey(currentKey)) {
 						Integer original = currentClassifyHits.get(currentKey);
 						currentClassifyHits.put(currentKey, original + currentCount);
 					} else {
 						currentClassifyHits.put(currentKey, currentCount);
 					}
+					Integer originalTotal = classifyTotalHits.get(classify);
+					classifyTotalHits.set(classify, originalTotal + currentCount);
 				}
 
 			}

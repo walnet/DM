@@ -35,10 +35,15 @@ public class Feature {
 	public void setClassifyDocuments(ArrayList<LinkedList<Document>> value) {
 		classifyDocuments = value;
 	}
+	
+	public ArrayList<Integer> getClassifyTotalHits() {
+		return classifyTotalHits;
+	}
 
 	public void clear() {
 		classifyHits.clear();
 		classifyDocuments.clear();
+		classifyTotalHits.clear();
 	}
 
 }
