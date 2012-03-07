@@ -19,8 +19,11 @@ public class Document {
 	private String path;
 	// 所属分类
 	private int classify = -1;
+	// 相对于每个类别的相似度
+	private ArrayList<Double> classifyValues = new ArrayList<Double>();
 	// 包括序号和计数
 	private HashMap<Integer, Integer> hits = new HashMap<Integer, Integer>();
+	// Only for debug.
 	private LinkedList<Integer> hitIndices = new LinkedList<Integer>();
 
 	public String getPath() {
@@ -41,6 +44,14 @@ public class Document {
 
 	public HashMap<Integer, Integer> getHits() {
 		return hits;
+	}
+	
+	public ArrayList<Double> getClassifyValues() {
+		return classifyValues;
+	}
+	
+	public void addClassifyValue(double value) {
+		classifyValues.add(value);
 	}
 
 	public void InsertWord(Integer index) {

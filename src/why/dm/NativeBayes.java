@@ -3,6 +3,7 @@
  */
 package why.dm;
 
+import java.lang.ArithmeticException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,6 +26,8 @@ public class NativeBayes {
 	// classifyTotals[j]表示j类所有词出现次数总和
 	// private ArrayList<Integer> classifyTotals = new ArrayList<Integer>();
 
+	private int total = 0;
+	private int correct = 0;
 	private boolean debugTrace = true;
 
 	public void setFeatureExtraction(FeatureExtraction value) {
@@ -32,25 +35,25 @@ public class NativeBayes {
 	}
 
 	public void classify() {
-		for (int i = 0; featureExtraction.getClassifyNames().size() > i; ++i) {
-			Pcs.add(getPc(i));
+		for (int classify = 0; featureExtraction.getClassifyNames().size() > classify; ++classify) {
+			Pcs.add(getPc(classify));
 			// IntPtr diff = new IntPtr(0);
 			// IntPtr total = new IntPtr(0);
 			// getClassifyParam(i, diff, total);
 			// classifyDiffs.add(diff.value);
 			// classifyTotals.add(total.value);
 			int total = 0;
-			HashMap<Integer, Integer> currentclassifyHit = featureExtraction.getTrainingFeature().getClassifyHits().get(i);
+			HashMap<Integer, Integer> currentclassifyHit = featureExtraction
+					.getTrainingFeature().getClassifyHits().get(classify);
 			Iterator<Integer> iter = currentclassifyHit.keySet().iterator();
 			while (iter.hasNext()) {
 				Integer currentTerm = iter.next();
 				total += currentclassifyHit.get(currentTerm);
 			}
 			if (debugTrace) {
-				System.out
-						.println(i + ">> Pc:" + Pcs.get(i) + "; diff: "
-								+ currentclassifyHit.size() + "; total: "
-								+ total + ".");
+				System.out.println(classify + ">> Pc:" + Pcs.get(classify)
+						+ "; diff: " + currentclassifyHit.keySet().size()
+						+ "; total: " + total + ".");
 			}
 		}
 		Iterator<Document> iter = featureExtraction.getTestDocuments()
@@ -58,13 +61,13 @@ public class NativeBayes {
 		while (iter.hasNext()) {
 			Document testDocument = iter.next();
 			int totalClassify = featureExtraction.getClassifyNames().size();
-			double maxPcd = 0;
+			double maxPcd = Double.NEGATIVE_INFINITY;
 			int maxClassify = -1;
 			for (int currentClassify = 0; totalClassify > currentClassify; ++currentClassify) {
 				double pcd = getPcd(testDocument, currentClassify);
-				// 累乘转成log累加，都是负数，绝对值越大越强
-				//if (maxPcd < pcd) {
-				if (maxPcd > pcd) {
+				testDocument.addClassifyValue(pcd);
+				// 累乘转成log累加，都是负数
+				if (maxPcd < pcd) {
 					maxPcd = pcd;
 					maxClassify = currentClassify;
 				}
@@ -75,59 +78,70 @@ public class NativeBayes {
 				if (lastIndex2 > lastIndex)
 					lastIndex = lastIndex2;
 				System.out.println("(" + testDocument.getClassify() + ") "
-						+ testDocument.getPath()/* .substring(lastIndex + 1) */
+						+ testDocument.getPath().substring(lastIndex + 1)
 						+ ">> " + maxClassify);
+				++total;
+				if (maxClassify == testDocument.getClassify()) {
+					++correct;
+				}
 			}
 			testDocument.setClassify(maxClassify);
 		}
+		System.out.println("Finished: " + correct + " correct of total "
+				+ total + "(" + (double) correct / (double) total + ").");
 	}
 
 	public double getPcd(Document testDocument, int classify) {
 		// 累乘转成log累加
-		//return getPdc(testDocument, classify) * Pcs.get(classify);
+		// return getPdc(testDocument, classify) * Pcs.get(classify);
 		return getPdc(testDocument, classify) + Math.log(Pcs.get(classify));
 	}
 
-	public double getPdc(Document testDocument, int classify) {
+	public double getPdc(Document testDocument, int classify)
+			throws ArithmeticException {
 		double lastNumerator = 0;
 		double lastDenominator = 0;
 		double lastPwc = 0;
 		// 累乘转成log累加
-		//double pwc = 1;
+		// double pwc = 1;
 		double pwc = 0;
 		Iterator<Integer> iterTerm = testDocument.getHits().keySet().iterator();
 		while (iterTerm.hasNext()) {
 			Integer currentTerm;
 			currentTerm = iterTerm.next();
-			ArrayList<HashMap<Integer, Integer>> currentClassifyHits = featureExtraction.getTrainingFeature().getClassifyHits();
-			HashMap<Integer, Integer> currentClassifyHit = currentClassifyHits.get(classify);
-			
+			HashMap<Integer, Integer> currentClassifyHit = featureExtraction
+					.getTrainingFeature().getClassifyHits().get(classify);
+
 			// 当前词在当前类别中的出现次数
-			Integer currentTermClassifyHit = currentClassifyHit.get(currentTerm);
+			Integer currentTermClassifyHit = currentClassifyHit
+					.get(currentTerm);
 			if (null == currentTermClassifyHit)
 				currentTermClassifyHit = 0;
-			
+
 			// 当前类别所有词出现次数总和
 			int totalClassifyHits = 0;
-			Iterator<Integer> iterAllTerm = currentClassifyHit.keySet().iterator();
+			Iterator<Integer> iterAllTerm = currentClassifyHit.keySet()
+					.iterator();
 			while (iterAllTerm.hasNext()) {
-				Integer hit = iterAllTerm.next();
+				Integer hit = currentClassifyHit.get(iterAllTerm.next());
 				if (null == hit)
 					hit = 0;
 				totalClassifyHits += hit;
 			}
-			
+
 			// 累乘转成log累加
 			double numerator = 1 + currentTermClassifyHit;
-			double denominator = currentClassifyHits.size() + totalClassifyHits;
+			double denominator = currentClassifyHit.keySet().size()
+					+ totalClassifyHits;
 			if (0 != denominator) {
-				//System.out.println(lastDenominator);
-				//System.out.println(lastPwc);
-				//System.out.println(lastNumerator);
-				//pwc *= numerator / denominator;
+				// System.out.println(lastDenominator);
+				// System.out.println(lastPwc);
+				// System.out.println(lastNumerator);
+				// pwc *= numerator / denominator;
 				pwc += Math.log(numerator / denominator);
 			} else {
-				pwc = -1;
+				// pwc = -1;
+				throw new ArithmeticException();
 			}
 			lastNumerator = numerator;
 			lastDenominator = denominator;
@@ -136,19 +150,21 @@ public class NativeBayes {
 		return pwc;
 	}
 
-	public double getPc(int classify) {
-		int nc = 0;
-		LinkedList<Document> currentClassifyDocuments = featureExtraction.getTrainingFeature().getClassifyDocuments().get(classify);
-		for (int i = 0; currentClassifyDocuments.size() > i; ++i) {
-			nc += currentClassifyDocuments.size();
+	public double getPc(int classify) throws ArithmeticException {
+		int total = 0;
+		for (int i = 0; featureExtraction.getTrainingFeature()
+				.getClassifyDocuments().size() > i; ++i) {
+			total += featureExtraction.getTrainingFeature()
+					.getClassifyDocuments().get(i).size();
 		}
-		double numerator = 1 + nc;
+		double numerator = 1 + featureExtraction.getTrainingFeature()
+				.getClassifyDocuments().get(classify).size();
 		double denominator = featureExtraction.getClassifyNames().size()
-				+ featureExtraction.getTrainingFeature().getClassifyDocuments().size();
+				+ total;
 		if (0 != denominator) {
 			return numerator / denominator;
 		} else {
-			return -1;
+			throw new ArithmeticException();
 		}
 	}
 

@@ -42,7 +42,7 @@ public class FeatureExtraction {
 	// 测试文档集合
 	private LinkedList<Document> testDocuments = new LinkedList<Document>();
 	// 测试文档比例（剩下的都是训练文档）
-	private double testProportion = 0.1;
+	private double testProportion = 0.01;
 
 	// 打开调试
 	private boolean debugTrace = false;
@@ -106,10 +106,10 @@ public class FeatureExtraction {
 		File dirFile = new File(dirPath);
 		File[] files = dirFile.listFiles();
 
-		if (files == null)
+		if (null == files)
 			return;
 
-		for (int i = 0; i < files.length; i++) {
+		for (int i = 0; files.length > i; ++i) {
 			if (files[i].isDirectory())
 				readDocumentList(files[i].getAbsolutePath(), classify);
 			else {
