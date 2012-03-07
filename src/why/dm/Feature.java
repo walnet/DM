@@ -23,9 +23,15 @@ public class Feature {
 	// Classify total hits
 	// 各类中的term总命中次数，也就是把所有一个类中的所有classifyHits加起来。第一维是分类索引
 	private ArrayList<Integer> classifyTotalHits = new ArrayList<Integer>();
+	// term命中次数
+	private HashMap<Integer, Integer> hits = new HashMap<Integer, Integer>();
 
 	public ArrayList<HashMap<Integer, Integer>> getClassifyHits() {
 		return classifyHits;
+	}
+
+	public void setClassifyHits(ArrayList<HashMap<Integer, Integer>> value) {
+		classifyHits = value;
 	}
 
 	public ArrayList<LinkedList<Document>> getClassifyDocuments() {
@@ -39,11 +45,24 @@ public class Feature {
 	public ArrayList<Integer> getClassifyTotalHits() {
 		return classifyTotalHits;
 	}
+	
+	public void setClassifyTotalHits(ArrayList<Integer> value) {
+		classifyTotalHits = value;
+	}
+	
+	public HashMap<Integer, Integer> getHits() {
+		return hits;
+	}
+	
+	public void setHits(HashMap<Integer, Integer> value) {
+		hits = value;
+	}
 
 	public void clear() {
 		classifyHits.clear();
 		classifyDocuments.clear();
 		classifyTotalHits.clear();
+		hits.clear();
 	}
 
 }

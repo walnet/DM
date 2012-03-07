@@ -103,7 +103,6 @@ public final class Main {
 
 	public static DefaultCategoryDataset toDataset(FeatureExtraction featureExtraction) {
 		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-		int currentRound = 0;
 			int currentDocument = 0;
 			Iterator<Document> iter = featureExtraction.getTestDocuments()
 					.iterator();

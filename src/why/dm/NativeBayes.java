@@ -7,7 +7,6 @@ import java.lang.ArithmeticException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 
 /**
  * Native Bayes classification
@@ -98,9 +97,9 @@ public class NativeBayes {
 
 	public double getPdc(Document testDocument, int classify)
 			throws ArithmeticException {
-		double lastNumerator = 0;
-		double lastDenominator = 0;
-		double lastPwc = 0;
+		//double lastNumerator = 0;
+		//double lastDenominator = 0;
+		//double lastPwc = 0;
 		// 累乘转成log累加
 		// double pwc = 1;
 		double pwc = 0;
@@ -132,9 +131,9 @@ public class NativeBayes {
 				// pwc = -1;
 				throw new ArithmeticException();
 			}
-			lastNumerator = numerator;
-			lastDenominator = denominator;
-			lastPwc = pwc;
+			//lastNumerator = numerator;
+			//lastDenominator = denominator;
+			//lastPwc = pwc;
 		}
 		return pwc;
 	}

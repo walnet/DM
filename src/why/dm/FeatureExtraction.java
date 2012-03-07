@@ -310,15 +310,28 @@ public class FeatureExtraction {
 				while (iter.hasNext()) {
 					Integer currentKey = iter.next();
 					Integer currentCount = currentDocument.getHits().get(currentKey);
+					
+					// Classify hits
 					HashMap<Integer, Integer> currentClassifyHits = classifyHits.get(classify);
-					if (currentClassifyHits.containsKey(currentKey)) {
-						Integer original = currentClassifyHits.get(currentKey);
-						currentClassifyHits.put(currentKey, original + currentCount);
-					} else {
+					Integer originalClassifyHits = currentClassifyHits.get(currentKey);
+					if (null == originalClassifyHits) {
 						currentClassifyHits.put(currentKey, currentCount);
+					} else {
+						currentClassifyHits.put(currentKey, originalClassifyHits + currentCount);
 					}
-					Integer originalTotal = classifyTotalHits.get(classify);
-					classifyTotalHits.set(classify, originalTotal + currentCount);
+					
+					// Classify total hits
+					Integer originalClassifyTotalHits = classifyTotalHits.get(classify);
+					classifyTotalHits.set(classify, originalClassifyTotalHits + currentCount);
+					
+					// Hits
+					HashMap<Integer, Integer> hits = trainingFeature.getHits();
+					Integer originalHits = hits.get(currentKey);
+					if (null == originalHits) {
+						hits.put(currentKey, currentCount);
+					} else {
+						hits.put(currentKey, originalHits + currentCount);
+					}
 				}
 
 			}
