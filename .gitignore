@@ -1,4 +1,5 @@
 
-/bin/log.txt
-/bin/why
+/bin
 /doc
+/runtime/*.png
+/runtime/log.txt

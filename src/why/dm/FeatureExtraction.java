@@ -19,22 +19,21 @@ import java.util.LinkedList;
  * @version $Rev$ $Date$
  */
 public class FeatureExtraction {
-	
+
 	// 以下为所有文档共有（包括训练和测试）
-	
+
 	// 所有文档集合
 	private ArrayList<LinkedList<Document>> allDocuments = new ArrayList<LinkedList<Document>>();
 	// 所有term集合，包括名字和序号
 	private HashMap<String, Integer> terms = new HashMap<String, Integer>();
 	// Name string of all terms. Only for debug.
 	private ArrayList<String> termIndices = new ArrayList<String>();
-	// Classify name. Also first-layer sub folder name.
+	// Classify names. Also first-layer sub folder name.
 	private ArrayList<String> classifyNames = new ArrayList<String>();
-	
 
-	//Feature feature = new Feature();
+	// Feature feature = new Feature();
 	Feature trainingFeature = new Feature();
-	//Feature testFeature = new Feature();
+	// Feature testFeature = new Feature();
 
 	// Index of termsIndices. Only for debug.
 	private int currentTermIndex = 0;
@@ -60,22 +59,22 @@ public class FeatureExtraction {
 		return classifyNames;
 	}
 
-	//public Feature getFeature() {
-	//	return feature;
-	//}
+	// public Feature getFeature() {
+	// return feature;
+	// }
 
 	public Feature getTrainingFeature() {
 		return trainingFeature;
 	}
 
-	//public Feature getTestFeature() {
-	//	return testFeature;
-	//}
+	// public Feature getTestFeature() {
+	// return testFeature;
+	// }
 
 	public LinkedList<Document> getTestDocuments() {
 		return testDocuments;
 	}
-	
+
 	public void clear() {
 		allDocuments.clear();
 		terms.clear();
@@ -119,8 +118,8 @@ public class FeatureExtraction {
 				document.setPath(fileNameStr);
 				document.setClassify(classify);
 				allDocuments.get(classify).add(document);
-				//documents().add(document);
-				//classifyDocuments.get(classify).add(document);
+				// documents().add(document);
+				// classifyDocuments.get(classify).add(document);
 			}
 		}
 	}
@@ -136,7 +135,7 @@ public class FeatureExtraction {
 
 		if (files == null)
 			return;
-		//documents.clear();
+		// documents.clear();
 		clear();
 		for (int i = 0; i < files.length; ++i) {
 			if (files[i].isDirectory()) {
@@ -165,10 +164,10 @@ public class FeatureExtraction {
 				try {
 					FileInputStream in = new FileInputStream(
 							currentDocument.getPath());
-	
+
 					try {
 						while (true)
-	
+
 						{
 							int ch = in.read();
 							if (Character.isLetter((char) ch)) {
@@ -183,29 +182,30 @@ public class FeatureExtraction {
 										/* to test add(char ch) */
 										for (int c = 0; c < j; c++)
 											s.add(w[c]);
-	
+
 										/* or, to test add(char[] w, int j) */
 										/* s.add(w, j); */
-	
+
 										if (s.isStopword()) {
 											s.resetIndex();
 										} else {
 											s.stem();
-	
+
 											String u;
-	
+
 											/* and now, to test toString() : */
 											u = s.toString();
-	
+
 											/*
 											 * to test getResultBuffer(),
 											 * getResultLength() :
 											 */
 											/*
-											 * u = new String(s.getResultBuffer(),
-											 * 0, s.getResultLength());
+											 * u = new
+											 * String(s.getResultBuffer(), 0,
+											 * s.getResultLength());
 											 */
-	
+
 											if (debugTrace) {
 												System.out.print(u);
 											}
@@ -218,21 +218,20 @@ public class FeatureExtraction {
 												termIndices.add(u);
 												++currentTermIndex;
 											}
-/*
-											// 加入分类索引
-											HashMap<Integer, Integer> currentClassifyHits = classifyHits
-													.get(currentDocument
-															.getClassify());
-											if (currentClassifyHits
-													.containsKey(index)) {
-												Integer original = currentClassifyHits
-														.get(index);
-												currentClassifyHits.put(index,
-														original + 1);
-											} else {
-												currentClassifyHits.put(index, 1);
-											}
-*/
+											/*
+											 * // 加入分类索引 HashMap<Integer,
+											 * Integer> currentClassifyHits =
+											 * classifyHits .get(currentDocument
+											 * .getClassify()); if
+											 * (currentClassifyHits
+											 * .containsKey(index)) { Integer
+											 * original = currentClassifyHits
+											 * .get(index);
+											 * currentClassifyHits.put(index,
+											 * original + 1); } else {
+											 * currentClassifyHits.put(index,
+											 * 1); }
+											 */
 											// 加入文档索引
 											currentDocument.InsertWord(index);
 
@@ -253,6 +252,13 @@ public class FeatureExtraction {
 						// currentDocument.getPath());
 						e.printStackTrace();
 						break;
+					} finally {
+						try {
+							in.close();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 					// documents.push(currentDocument);
 				} catch (FileNotFoundException e) {
@@ -286,15 +292,20 @@ public class FeatureExtraction {
 		testDocuments.clear();
 		trainingFeature.clear();
 		for (int classify = 0; allDocuments.size() > classify; ++classify) {
-			ArrayList<Integer> classifyTotalHits = trainingFeature.getClassifyTotalHits();
-			ArrayList<HashMap<Integer, Integer>> classifyHits = trainingFeature.getClassifyHits();
-			ArrayList<LinkedList<Document>> classifyDocuments = trainingFeature.getClassifyDocuments();
+			ArrayList<Integer> classifyTotalHits = trainingFeature
+					.getClassifyTotalHits();
+			ArrayList<HashMap<Integer, Integer>> classifyHits = trainingFeature
+					.getClassifyHits();
+			ArrayList<LinkedList<Document>> classifyDocuments = trainingFeature
+					.getClassifyDocuments();
 			classifyTotalHits.add(0);
 			classifyHits.add(new HashMap<Integer, Integer>());
 			classifyDocuments.add(new LinkedList<Document>());
 			int added = 0;
-			LinkedList<Document> currentClassifyDocuments = allDocuments.get(classify);
-			Iterator<Document> iterDocument = currentClassifyDocuments.iterator();
+			LinkedList<Document> currentClassifyDocuments = allDocuments
+					.get(classify);
+			Iterator<Document> iterDocument = currentClassifyDocuments
+					.iterator();
 			Document currentDocument;
 			while (iterDocument.hasNext()) {
 				currentDocument = iterDocument.next();
@@ -304,26 +315,33 @@ public class FeatureExtraction {
 				} else {
 					classifyDocuments.get(classify).add(currentDocument);
 				}
-				
+
 				// 将项加入分类索引
-				Iterator<Integer> iter = currentDocument.getHits().keySet().iterator();
+				Iterator<Integer> iter = currentDocument.getHits().keySet()
+						.iterator();
 				while (iter.hasNext()) {
 					Integer currentKey = iter.next();
-					Integer currentCount = currentDocument.getHits().get(currentKey);
-					
+					Integer currentCount = currentDocument.getHits().get(
+							currentKey);
+
 					// Classify hits
-					HashMap<Integer, Integer> currentClassifyHits = classifyHits.get(classify);
-					Integer originalClassifyHits = currentClassifyHits.get(currentKey);
+					HashMap<Integer, Integer> currentClassifyHits = classifyHits
+							.get(classify);
+					Integer originalClassifyHits = currentClassifyHits
+							.get(currentKey);
 					if (null == originalClassifyHits) {
 						currentClassifyHits.put(currentKey, currentCount);
 					} else {
-						currentClassifyHits.put(currentKey, originalClassifyHits + currentCount);
+						currentClassifyHits.put(currentKey,
+								originalClassifyHits + currentCount);
 					}
-					
+
 					// Classify total hits
-					Integer originalClassifyTotalHits = classifyTotalHits.get(classify);
-					classifyTotalHits.set(classify, originalClassifyTotalHits + currentCount);
-					
+					Integer originalClassifyTotalHits = classifyTotalHits
+							.get(classify);
+					classifyTotalHits.set(classify, originalClassifyTotalHits
+							+ currentCount);
+
 					// Hits
 					HashMap<Integer, Integer> hits = trainingFeature.getHits();
 					Integer originalHits = hits.get(currentKey);
@@ -340,8 +358,10 @@ public class FeatureExtraction {
 
 	public void trace() {
 		for (int classify = 0; allDocuments.size() > classify; ++classify) {
-			LinkedList<Document> currentClassifyDocuments = allDocuments.get(classify);
-			Iterator<Document> iterDocument = currentClassifyDocuments.iterator();
+			LinkedList<Document> currentClassifyDocuments = allDocuments
+					.get(classify);
+			Iterator<Document> iterDocument = currentClassifyDocuments
+					.iterator();
 			while (iterDocument.hasNext()) {
 				iterDocument.next().trace(classifyNames, termIndices);
 			}

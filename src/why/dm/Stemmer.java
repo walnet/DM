@@ -572,8 +572,8 @@ public class Stemmer {
 		String b = null;
 		stopwords = new HashSet<String>();
 		try {
-			br = new BufferedReader(new FileReader("bin/stopwords.txt"));
-			bw = new BufferedWriter(new FileWriter("bin/log.txt"));
+			br = new BufferedReader(new FileReader("runtime/stopwords.txt"));
+			bw = new BufferedWriter(new FileWriter("runtime/log.txt"));
 			while (null != (b = br.readLine())) {
 				b.trim();
 				if (0 < b.length() && '#' != b.charAt(0)) {

@@ -52,7 +52,7 @@ public final class Main {
 
 		// Extract feacture
 		FeatureExtraction featureExtraction = new FeatureExtraction();
-		featureExtraction.extractFeacture("bin/newgroups");
+		featureExtraction.extractFeacture("runtime/newgroups");
 		featureExtraction.setTestProportion(0.1);
 		featureExtraction.selectTestDocuments();
 		//System.out.println();
@@ -62,7 +62,6 @@ public final class Main {
 		System.out.println();
 		NativeBayes nativeBayes = new NativeBayes();
 		nativeBayes.setFeatureExtraction(featureExtraction);
-		nativeBayes.getPdc(new Document(), 2);
 		nativeBayes.classify();
 		Date end = new Date();
 
@@ -81,9 +80,9 @@ public final class Main {
 			// Save image
 			java.util.Date d = new java.util.Date();
 			String time = String.valueOf(d.getTime());
-			ChartUtilities.saveChartAsPNG(new File("E://naivebayes" + time
+			ChartUtilities.saveChartAsPNG(new File("runtime/naivebayes" + time
 					+ ".png"), jfreechart, 2048, 768);
-			// ChartUtilities.saveChartAsJPEG(new File("F://BarChart.jpg"),
+			// ChartUtilities.saveChartAsJPEG(new File("trace/BarChart.jpg"),
 			// chart, 368, 278);
 		} catch (Exception e) {
 			e.printStackTrace();
