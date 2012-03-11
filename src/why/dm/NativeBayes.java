@@ -25,9 +25,9 @@ public class NativeBayes {
 	// classifyTotals[j]表示j类所有词出现次数总和
 	// private ArrayList<Integer> classifyTotals = new ArrayList<Integer>();
 
-	private int total = 0;
-	private int correct = 0;
-	private boolean debugTrace = true;
+	private boolean debugTrace = false;
+	private int debugTotal = 0;
+	private int debugCorrect = 0;
 
 	public void setFeatureExtraction(FeatureExtraction value) {
 		featureExtraction = value;
@@ -78,15 +78,19 @@ public class NativeBayes {
 				System.out.println("(" + testDocument.getClassify() + ") "
 						+ testDocument.getPath().substring(lastIndex + 1)
 						+ ">> " + maxClassify);
-				++total;
+				++debugTotal;
 				if (maxClassify == testDocument.getClassify()) {
-					++correct;
+					++debugCorrect;
 				}
 			}
 			testDocument.setClassify(maxClassify);
 		}
-		System.out.println("Finished: " + correct + " correct of total "
-				+ total + "(" + (double) correct / (double) total + ").");
+		if (debugTrace) {
+			System.out.println("Finished: " + debugCorrect + " correct of total "
+					+ debugTotal + "(" + (double) debugCorrect / (double) debugTotal + ").");
+		} else {
+			System.out.println("Finished!");
+		}
 	}
 
 	public double getPcd(Document testDocument, int classify) {

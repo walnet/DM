@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.TreeSet;
 
 /**
  * 本类的作用是遍历文件后来提取特征
@@ -42,6 +43,9 @@ public class FeatureExtraction {
 	private LinkedList<Document> testDocuments = new LinkedList<Document>();
 	// 测试文档比例（剩下的都是训练文档）
 	private double testProportion = 0.01;
+
+	// ECE选择的特征（即被选中的term）及其ECE值
+	private TreeSet<IntegerDouble> eces = new TreeSet<IntegerDouble>();
 
 	// 打开调试
 	private boolean debugTrace = false;
@@ -86,13 +90,169 @@ public class FeatureExtraction {
 	}
 
 	/**
-	 * 对指定目录下的文件进行提取特征
+	 * 读取指定目录下的文件
 	 * 
 	 * @param dirPath
 	 */
-	public void extractFeacture(String dirPath) {
+	public void readFiles(String dirPath) {
 		readTypesAndFilePaths(dirPath);
 		doStem();
+	}
+
+	public void setTestProportion(double value) {
+		testProportion = value;
+	}
+
+	public void selectTestDocuments() {
+		// boolean testFull = false;
+		testDocuments.clear();
+		trainingFeature.clear();
+		int totalHit = 0;
+		for (int classify = 0; allDocuments.size() > classify; ++classify) {
+			ArrayList<Integer> classifyTotalHits = trainingFeature
+					.getClassifyTotalHits();
+			ArrayList<HashMap<Integer, Integer>> classifyHits = trainingFeature
+					.getClassifyHits();
+			ArrayList<LinkedList<Document>> classifyDocuments = trainingFeature
+					.getClassifyDocuments();
+			LinkedList<Document> documents = trainingFeature.getDocuments();
+			classifyTotalHits.add(0);
+			classifyHits.add(new HashMap<Integer, Integer>());
+			classifyDocuments.add(new LinkedList<Document>());
+			int added = 0;
+			LinkedList<Document> currentClassifyDocuments = allDocuments
+					.get(classify);
+			Iterator<Document> iterDocument = currentClassifyDocuments
+					.iterator();
+			Document currentDocument;
+			while (iterDocument.hasNext()) {
+				currentDocument = iterDocument.next();
+				if ((double) added / (double) currentClassifyDocuments.size() <= testProportion) {
+					testDocuments.add(currentDocument);
+					++added;
+				} else {
+					classifyDocuments.get(classify).add(currentDocument);
+					documents.add(currentDocument);
+				}
+
+				// 将项加入分类索引
+				Iterator<Integer> iter = currentDocument.getHits().keySet()
+						.iterator();
+				while (iter.hasNext()) {
+					Integer currentKey = iter.next();
+					Integer currentCount = currentDocument.getHits().get(
+							currentKey);
+
+					// Total hit
+					totalHit += currentCount;
+
+					// Classify hits
+					HashMap<Integer, Integer> currentClassifyHits = classifyHits
+							.get(classify);
+					Integer originalClassifyHits = currentClassifyHits
+							.get(currentKey);
+					if (null == originalClassifyHits) {
+						currentClassifyHits.put(currentKey, currentCount);
+					} else {
+						currentClassifyHits.put(currentKey,
+								originalClassifyHits + currentCount);
+					}
+
+					// Classify total hits
+					Integer originalClassifyTotalHits = classifyTotalHits
+							.get(classify);
+					classifyTotalHits.set(classify, originalClassifyTotalHits
+							+ currentCount);
+
+					// Hits
+					HashMap<Integer, Integer> hits = trainingFeature.getHits();
+					Integer originalHits = hits.get(currentKey);
+					if (null == originalHits) {
+						hits.put(currentKey, currentCount);
+					} else {
+						hits.put(currentKey, originalHits + currentCount);
+					}
+				}
+
+			}
+		}
+		trainingFeature.setTotalHit(totalHit);
+	}
+
+	/**
+	 * Feature selection
+	 */
+	public void selectFeature() {
+		System.out.println();
+		int currentTerm = 0;
+		Iterator<String> iter = terms.keySet().iterator();
+		while (iter.hasNext()) {
+			Integer i = terms.get(iter.next());
+			eces.add(new IntegerDouble(i, ece(i)));
+			if (0 == currentTerm % 100) {
+				System.out.print(currentTerm + " ");
+			}
+			if (0 == currentTerm % 2000) {
+				System.out.println();
+			}
+			++currentTerm;
+		}
+	}
+
+	public void traceTerm() {
+		int currentTerm = 0;
+		Iterator<IntegerDouble> iter2 = eces.iterator();
+		while (iter2.hasNext() && 1000 > currentTerm) {
+			IntegerDouble id = iter2.next();
+			System.out.println("Rank " + currentTerm++ + ": "
+					+ termIndices.get(id.getIntValue()) + "("
+					+ id.getIntValue() + "), " + id.getDoubleValue() + ". ");
+		}
+	}
+
+	public void traceDocument() {
+		for (int classify = 0; allDocuments.size() > classify; ++classify) {
+			LinkedList<Document> currentClassifyDocuments = allDocuments
+					.get(classify);
+			Iterator<Document> iterDocument = currentClassifyDocuments
+					.iterator();
+			while (iterDocument.hasNext()) {
+				iterDocument.next().trace(classifyNames, termIndices);
+			}
+		}
+	}
+
+	/**
+	 * @param args
+	 */
+	/*
+	 * public static void main(String[] args) {
+	 * getTypesAndFilePaths("bin/newgroups"); for (int i = 0; i <
+	 * firstSubDirNames.size(); i++) {
+	 * System.out.println(firstSubDirNames.get(i)); }
+	 * System.out.println("Total files: "+filePaths.size()); }
+	 */
+
+	/**
+	 * 根据目录的路径，得到其目录下所有文件路径+名称，以及第一次子目录的文件
+	 * 
+	 * @param dirPath
+	 */
+	private void readTypesAndFilePaths(String dirPath) {
+		File dirFile = new File(dirPath);
+		File[] files = dirFile.listFiles();
+
+		if (files == null)
+			return;
+		// documents.clear();
+		clear();
+		for (int i = 0; i < files.length; ++i) {
+			if (files[i].isDirectory()) {
+				allDocuments.add(new LinkedList<Document>());
+				readDocumentList(files[i].getAbsolutePath(), i);
+				classifyNames.add(files[i].getName());
+			}
+		}
 	}
 
 	/**
@@ -125,31 +285,9 @@ public class FeatureExtraction {
 	}
 
 	/**
-	 * 根据目录的路径，得到其目录下所有文件路径+名称，以及第一次子目录的文件
-	 * 
-	 * @param dirPath
-	 */
-	private void readTypesAndFilePaths(String dirPath) {
-		File dirFile = new File(dirPath);
-		File[] files = dirFile.listFiles();
-
-		if (files == null)
-			return;
-		// documents.clear();
-		clear();
-		for (int i = 0; i < files.length; ++i) {
-			if (files[i].isDirectory()) {
-				allDocuments.add(new LinkedList<Document>());
-				readDocumentList(files[i].getAbsolutePath(), i);
-				classifyNames.add(files[i].getName());
-			}
-		}
-	}
-
-	/**
 	 * 词法分析、去除停用词、用Porter Stemming Algorithm进行词根还原
 	 */
-	public void doStem() {
+	private void doStem() {
 		char[] w = new char[501];
 		Stemmer s = new Stemmer();
 		s.readStopword();
@@ -270,113 +408,61 @@ public class FeatureExtraction {
 				if (debugTrace) {
 					System.out.println('.');
 				} else {
-					++debugCount;
 					if (0 == debugCount % 100) {
 						System.out.print(String.valueOf(debugCount) + " ");
 					}
 					if (0 == debugCount % 2000) {
 						System.out.println();
 					}
+					++debugCount;
 				}
 			}
 
-		}
-	}
-
-	public void setTestProportion(double value) {
-		testProportion = value;
-	}
-
-	public void selectTestDocuments() {
-		// boolean testFull = false;
-		testDocuments.clear();
-		trainingFeature.clear();
-		for (int classify = 0; allDocuments.size() > classify; ++classify) {
-			ArrayList<Integer> classifyTotalHits = trainingFeature
-					.getClassifyTotalHits();
-			ArrayList<HashMap<Integer, Integer>> classifyHits = trainingFeature
-					.getClassifyHits();
-			ArrayList<LinkedList<Document>> classifyDocuments = trainingFeature
-					.getClassifyDocuments();
-			classifyTotalHits.add(0);
-			classifyHits.add(new HashMap<Integer, Integer>());
-			classifyDocuments.add(new LinkedList<Document>());
-			int added = 0;
-			LinkedList<Document> currentClassifyDocuments = allDocuments
-					.get(classify);
-			Iterator<Document> iterDocument = currentClassifyDocuments
-					.iterator();
-			Document currentDocument;
-			while (iterDocument.hasNext()) {
-				currentDocument = iterDocument.next();
-				if ((double) added / (double) currentClassifyDocuments.size() <= testProportion) {
-					testDocuments.add(currentDocument);
-					++added;
-				} else {
-					classifyDocuments.get(classify).add(currentDocument);
-				}
-
-				// 将项加入分类索引
-				Iterator<Integer> iter = currentDocument.getHits().keySet()
-						.iterator();
-				while (iter.hasNext()) {
-					Integer currentKey = iter.next();
-					Integer currentCount = currentDocument.getHits().get(
-							currentKey);
-
-					// Classify hits
-					HashMap<Integer, Integer> currentClassifyHits = classifyHits
-							.get(classify);
-					Integer originalClassifyHits = currentClassifyHits
-							.get(currentKey);
-					if (null == originalClassifyHits) {
-						currentClassifyHits.put(currentKey, currentCount);
-					} else {
-						currentClassifyHits.put(currentKey,
-								originalClassifyHits + currentCount);
-					}
-
-					// Classify total hits
-					Integer originalClassifyTotalHits = classifyTotalHits
-							.get(classify);
-					classifyTotalHits.set(classify, originalClassifyTotalHits
-							+ currentCount);
-
-					// Hits
-					HashMap<Integer, Integer> hits = trainingFeature.getHits();
-					Integer originalHits = hits.get(currentKey);
-					if (null == originalHits) {
-						hits.put(currentKey, currentCount);
-					} else {
-						hits.put(currentKey, originalHits + currentCount);
-					}
-				}
-
-			}
-		}
-	}
-
-	public void trace() {
-		for (int classify = 0; allDocuments.size() > classify; ++classify) {
-			LinkedList<Document> currentClassifyDocuments = allDocuments
-					.get(classify);
-			Iterator<Document> iterDocument = currentClassifyDocuments
-					.iterator();
-			while (iterDocument.hasNext()) {
-				iterDocument.next().trace(classifyNames, termIndices);
-			}
 		}
 	}
 
 	/**
-	 * @param args
+	 * ECE(Expected Cross Entropy)
 	 */
-	/*
-	 * public static void main(String[] args) {
-	 * getTypesAndFilePaths("bin/newgroups"); for (int i = 0; i <
-	 * firstSubDirNames.size(); i++) {
-	 * System.out.println(firstSubDirNames.get(i)); }
-	 * System.out.println("Total files: "+filePaths.size()); }
-	 */
+	private double ece(int term) {
 
+		// Calculate P(tk)
+		double pt = 0.;
+		int totalHit = trainingFeature.getTotalHit();
+		int termHit = 0;
+		if (trainingFeature.getHits().containsKey(term)) {
+			termHit = trainingFeature.getHits().get(term);
+		}
+		if (0 == totalHit) {
+			throw new ArithmeticException();
+		}
+		if (0 != termHit && 0 != totalHit) {
+			pt = (double) termHit / (double) totalHit;
+		}
+
+		// Calculate sigma( P(ci | tk) log( P(ci | tk) / P(ci) ) )
+		ArrayList<LinkedList<Document>> classifyDocuments = trainingFeature
+				.getClassifyDocuments();
+		double sigma = 0.;
+		for (int classify = 0; trainingFeature.getClassifyHits().size() > classify; ++classify) {
+			// Calculate P(ci | tk)
+			double pct = 0.;
+			if (trainingFeature.getClassifyHits().get(classify)
+					.containsKey(term)) {
+				pct = trainingFeature.getClassifyHits().get(classify).get(term);
+				pct /= termHit;
+			}
+
+			// Calculate sigma
+			if (0 != pct) {
+				double pc = (double) classifyDocuments.get(classify).size()
+						/ (double) trainingFeature.getDocuments().size();
+				double log = pct / pc;
+				sigma += pct * Math.log(log);
+			}
+		}
+
+		// Return the result
+		return pt * sigma;
+	}
 }

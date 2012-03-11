@@ -52,11 +52,12 @@ public final class Main {
 
 		// Extract feacture
 		FeatureExtraction featureExtraction = new FeatureExtraction();
-		featureExtraction.extractFeacture("runtime/newgroups");
+		featureExtraction.readFiles("runtime/newgroups");
 		featureExtraction.setTestProportion(0.1);
 		featureExtraction.selectTestDocuments();
-		//System.out.println();
-		//featureExtraction.trace();
+		featureExtraction.selectFeature();
+		System.out.println();
+		featureExtraction.traceTerm();
 
 		// Naive Bayes classification
 		System.out.println();
@@ -86,8 +87,8 @@ public final class Main {
 			// chart, 368, 278);
 		} catch (Exception e) {
 			e.printStackTrace();
-			//System.err.println("Problem occurred creating chart!"
-					//+ e.getMessage());
+			// System.err.println("Problem occurred creating chart!"
+			// + e.getMessage());
 		}
 
 		// Show time spent
@@ -100,17 +101,20 @@ public final class Main {
 				+ "m " + second + "s.");
 	}
 
-	public static DefaultCategoryDataset toDataset(FeatureExtraction featureExtraction) {
+	public static DefaultCategoryDataset toDataset(
+			FeatureExtraction featureExtraction) {
 		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-			int currentDocument = 0;
-			Iterator<Document> iter = featureExtraction.getTestDocuments()
-					.iterator();
-			while (iter.hasNext()) {
-				++currentDocument;
-				Document document = iter.next();
-				ArrayList<Double> values = document.getClassifyValues();
-		for (int index = 0; featureExtraction.getTrainingFeature().getClassifyHits().size() > index; ++index) {
-					dataset.addValue(-values.get(index), String.valueOf(index), currentDocument + "" + index);//String.valueOf(currentRound++));
+		int currentDocument = 0;
+		Iterator<Document> iter = featureExtraction.getTestDocuments()
+				.iterator();
+		while (iter.hasNext()) {
+			++currentDocument;
+			Document document = iter.next();
+			ArrayList<Double> values = document.getClassifyValues();
+			for (int index = 0; featureExtraction.getTrainingFeature()
+					.getClassifyHits().size() > index; ++index) {
+				dataset.addValue(-values.get(index), String.valueOf(index),
+						currentDocument + "" + index);// String.valueOf(currentRound++));
 			}
 		}
 		return dataset;
