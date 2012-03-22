@@ -3,19 +3,13 @@
  */
 package why.dm;
 
-import java.awt.Color;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartUtilities;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.AxisLocation;
-import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
+
+import why.dm.knn.Knn;
 
 /**
  * The Main class
@@ -52,51 +46,81 @@ public final class Main {
 
 		// Extract feacture
 		FeatureExtraction featureExtraction = new FeatureExtraction();
+		System.out.println("Read Files:");
 		featureExtraction.readFiles("runtime/newgroups");
-		featureExtraction.setTestProportion(0.1);
-		featureExtraction.selectTestDocuments();
-		featureExtraction.selectFeature();
-		System.out.println();
-		featureExtraction.traceTerm();
-
-		// Naive Bayes classification
-		System.out.println();
+		int totalTestPart = 10;
+		featureExtraction.setTestProportion(1. / totalTestPart);
 		NativeBayes nativeBayes = new NativeBayes();
-		nativeBayes.setFeatureExtraction(featureExtraction);
-		nativeBayes.classify();
-		Date end = new Date();
+		//BpAnn bpAnn = new BpAnn();
+		Knn knn = new Knn();
+		for (int testPart = 0; totalTestPart > testPart; ++testPart) {
+			String testPartString = String.valueOf(testPart);
+			System.out.println();
+			System.out.println();
+			System.out.println("Calculating round " + testPartString + "...");
 
-		// Chart
-		DefaultCategoryDataset dataset = toDataset(featureExtraction);
-		// --chart--------------
-		JFreeChart jfreechart = ChartFactory.createBarChart(
-				"Naive Bayes Chart", "Classification", "Value", dataset,
-				PlotOrientation.VERTICAL, false, true, false);
-		jfreechart.setBackgroundPaint(Color.white);
-		CategoryPlot categoryplot = (CategoryPlot) jfreechart.getPlot();
-		categoryplot.setBackgroundPaint(new Color(238, 238, 255));
-		categoryplot.setDomainAxisLocation(AxisLocation.BOTTOM_OR_RIGHT);
-		// ---------------------------------------
-		try {
-			// Save image
-			java.util.Date d = new java.util.Date();
-			String time = String.valueOf(d.getTime());
-			ChartUtilities.saveChartAsPNG(new File("runtime/naivebayes" + time
-					+ ".png"), jfreechart, 2048, 768);
-			// ChartUtilities.saveChartAsJPEG(new File("trace/BarChart.jpg"),
-			// chart, 368, 278);
-		} catch (Exception e) {
-			e.printStackTrace();
-			// System.err.println("Problem occurred creating chart!"
-			// + e.getMessage());
+			featureExtraction.selectTestDocuments(testPart);
+			//System.out.println(featureExtraction.getTestDocuments().size());
+			//System.out.println(featureExtraction.getTrainingFeature().getDocuments().size());
+			//System.out.println(featureExtraction.getTestDocuments().get(0).getPath());
+			//System.out.println();
+			//System.out.println("Select Features:");
+			featureExtraction.selectFeature();
+			//System.out.println();
+			//featureExtraction.traceTerm();
+
+			// Naive Bayes classification
+			System.out.println("Naive Bayes...");
+			nativeBayes.clear();
+			nativeBayes.setDebugFileName("native_bayes_" + testPartString);
+			nativeBayes.setFeatureExtraction(featureExtraction);
+			nativeBayes.train();
+			nativeBayes.test();
+	
+			// BP ANN classification
+			//System.out.println("BP ANN...");
+			//bpAnn.clear();
+			//bpAnn.setDebugFileName("bp_ann_" + testPartString);
+			//bpAnn.setFeatureExtraction(featureExtraction);
+			//bpAnn.train();
+			//bpAnn.test();
+	
+			// KNN classification
+			System.out.println("KNN...");
+			knn.clear();
+			knn.setDebugFileName("knn_" + testPartString);
+			knn.setFeatureExtraction(featureExtraction);
+			knn.train();
+			knn.test();
+
 		}
 
+		Date end = new Date();
+		/*
+		 * // Chart DefaultCategoryDataset dataset =
+		 * toDataset(featureExtraction); // --chart-------------- JFreeChart
+		 * jfreechart = ChartFactory.createBarChart( "Naive Bayes Chart",
+		 * "Classification", "Value", dataset, PlotOrientation.VERTICAL, false,
+		 * true, false); jfreechart.setBackgroundPaint(Color.white);
+		 * CategoryPlot categoryplot = (CategoryPlot) jfreechart.getPlot();
+		 * categoryplot.setBackgroundPaint(new Color(238, 238, 255));
+		 * categoryplot.setDomainAxisLocation(AxisLocation.BOTTOM_OR_RIGHT); //
+		 * --------------------------------------- try { // Save image
+		 * java.util.Date d = new java.util.Date(); String time =
+		 * String.valueOf(d.getTime()); ChartUtilities.saveChartAsPNG(new
+		 * File("runtime/naivebayes" + time + ".png"), jfreechart, 2048, 768);
+		 * // ChartUtilities.saveChartAsJPEG(new File("trace/BarChart.jpg"), //
+		 * chart, 368, 278); } catch (Exception e) { e.printStackTrace(); //
+		 * System.err.println("Problem occurred creating chart!" // +
+		 * e.getMessage()); }
+		 */
 		// Show time spent
 		long l = end.getTime() - begin.getTime();
 		long day = l / (24 * 60 * 60 * 1000);
 		long hour = (l / (60 * 60 * 1000) - day * 24);
 		long minute = ((l / (60 * 1000)) - day * 24 * 60 - hour * 60);
 		long second = (l / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - minute * 60);
+		System.out.println();
 		System.out.println("Used time: " + day + "d " + hour + "h " + minute
 				+ "m " + second + "s.");
 	}

@@ -11,38 +11,37 @@ package why.dm;
  */
 public class IntegerDouble implements Comparable<IntegerDouble> {
 
-	private int intValue;
 	private double doubleValue;
-	
+	private int intValue;
+
 	public IntegerDouble() {
 		this(0, 0.);
 	}
-	
+
 	public IntegerDouble(int intValue, double doubleValue) {
 		this.intValue = intValue;
 		this.doubleValue = doubleValue;
 	}
 
-	public int getIntValue() {
-		return intValue;
-	}
-
-	public void setIntValue(int value) {
-		intValue = value;
+	public int compareTo(IntegerDouble o) {
+		// return doubleValue > o.doubleValue ? 1 : (doubleValue ==
+		// o.doubleValue ? 0 : -1);
+		return doubleValue <= o.doubleValue ? 1 : -1;
 	}
 
 	public double getDoubleValue() {
 		return doubleValue;
 	}
 
+	public int getIntValue() {
+		return intValue;
+	}
+
 	public void setDoubleValue(double value) {
 		doubleValue = value;
 	}
 
-	@Override
-	public int compareTo(IntegerDouble o) {
-		return doubleValue > o.doubleValue ? 1 : (doubleValue == o.doubleValue ? 0 : -1);
-		//return doubleValue <= o.doubleValue ? 1 : -1;
+	public void setIntValue(int value) {
+		intValue = value;
 	}
-
 }

@@ -5,3 +5,6 @@
 修正结果：getPdc函数中，统计”当前类别所有词出现次数总和“时，featureExtraction.getTrainingFeature().getClassifyHits().get(classify).get(currentClassifyHit.keySet().iterator().next())写成了currentClassifyHit.keySet().iterator().next()，也就是直接把HashMap的索引误当成了该索引的的计数。这也恰好解释了上面的现象。由于这个量是在分母，所以0和1变得比重非常大。
 
 调试技巧：调整文件夹的顺序（可以通过改变文件名），看调整前后各种参数的变化情况，可以初步推断一些信息。
+
+技巧记录
+缓存、打印图表

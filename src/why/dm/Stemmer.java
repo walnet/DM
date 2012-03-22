@@ -91,33 +91,6 @@ public class Stemmer {
 			b[i++] = w[c];
 	}
 
-	/**
-	 * After a word has been stemmed, it can be retrieved by toString(), or a
-	 * reference to the internal buffer can be retrieved by getResultBuffer and
-	 * getResultLength (which is generally more efficient.)
-	 */
-	public String toString() {
-		return new String(b, 0, i_end);
-	}
-
-	/**
-	 * Returns the length of the word resulting from the stemming process.
-	 */
-	public int getResultLength() {
-		return i_end;
-	}
-
-	/**
-	 * Returns a reference to a character buffer containing the results of the
-	 * stemming process. You also need to consult getResultLength() to determine
-	 * the length of the result.
-	 */
-	public char[] getResultBuffer() {
-		return b;
-	}
-
-	/* cons(i) is true <=> b[i] is a consonant. */
-
 	private final boolean cons(int i) {
 		switch (b[i]) {
 		case 'a':
@@ -133,6 +106,39 @@ public class Stemmer {
 		}
 	}
 
+	private final boolean cvc(int i) {
+		if (i < 2 || !cons(i) || cons(i - 1) || !cons(i - 2))
+			return false;
+		{
+			int ch = b[i];
+			if (ch == 'w' || ch == 'x' || ch == 'y')
+				return false;
+		}
+		return true;
+	}
+
+	private final boolean doublec(int j) {
+		if (j < 1)
+			return false;
+		if (b[j] != b[j - 1])
+			return false;
+		return cons(j);
+	}
+
+	/* cons(i) is true <=> b[i] is a consonant. */
+
+	private final boolean ends(String s) {
+		int l = s.length();
+		int o = k - l + 1;
+		if (o < 0)
+			return false;
+		for (int i = 0; i < l; i++)
+			if (b[o + i] != s.charAt(i))
+				return false;
+		j = k - l;
+		return true;
+	}
+
 	/*
 	 * m() measures the number of consonant sequences between 0 and j. if c is a
 	 * consonant sequence and v a vowel sequence, and <..> indicates arbitrary
@@ -140,6 +146,44 @@ public class Stemmer {
 	 * 
 	 * <c><v> gives 0 <c>vc<v> gives 1 <c>vcvc<v> gives 2 <c>vcvcvc<v> gives 3
 	 * ....
+	 */
+
+	/**
+	 * Returns a reference to a character buffer containing the results of the
+	 * stemming process. You also need to consult getResultLength() to determine
+	 * the length of the result.
+	 */
+	public char[] getResultBuffer() {
+		return b;
+	}
+
+	/* vowelinstem() is true <=> 0,...j contains a vowel */
+
+	/**
+	 * Returns the length of the word resulting from the stemming process.
+	 */
+	public int getResultLength() {
+		return i_end;
+	}
+
+	/* doublec(j) is true <=> j,(j-1) contain a double consonant. */
+
+	/**
+	 * Judge stopword. Added by hector.
+	 */
+	public boolean isStopword() {
+		String word = new String(b, 0, i);
+		if (stopwords.contains(word))
+			return true;
+		return false;
+	}
+
+	/*
+	 * cvc(i) is true <=> i-2,i-1,i has the form consonant - vowel - consonant
+	 * and also if the second c is not w,x or y. this is used when trying to
+	 * restore an e at the end of a short word. e.g.
+	 * 
+	 * cav(e), lov(e), hop(e), crim(e), but snow, box, tray.
 	 */
 
 	private final int m() {
@@ -174,55 +218,9 @@ public class Stemmer {
 		}
 	}
 
-	/* vowelinstem() is true <=> 0,...j contains a vowel */
-
-	private final boolean vowelinstem() {
-		int i;
-		for (i = 0; i <= j; i++)
-			if (!cons(i))
-				return true;
-		return false;
-	}
-
-	/* doublec(j) is true <=> j,(j-1) contain a double consonant. */
-
-	private final boolean doublec(int j) {
-		if (j < 1)
-			return false;
-		if (b[j] != b[j - 1])
-			return false;
-		return cons(j);
-	}
-
-	/*
-	 * cvc(i) is true <=> i-2,i-1,i has the form consonant - vowel - consonant
-	 * and also if the second c is not w,x or y. this is used when trying to
-	 * restore an e at the end of a short word. e.g.
-	 * 
-	 * cav(e), lov(e), hop(e), crim(e), but snow, box, tray.
-	 */
-
-	private final boolean cvc(int i) {
-		if (i < 2 || !cons(i) || cons(i - 1) || !cons(i - 2))
-			return false;
-		{
-			int ch = b[i];
-			if (ch == 'w' || ch == 'x' || ch == 'y')
-				return false;
-		}
-		return true;
-	}
-
-	private final boolean ends(String s) {
-		int l = s.length();
-		int o = k - l + 1;
-		if (o < 0)
-			return false;
-		for (int i = 0; i < l; i++)
-			if (b[o + i] != s.charAt(i))
-				return false;
-		j = k - l;
-		return true;
+	private final void r(String s) {
+		if (m() > 0)
+			setto(s);
 	}
 
 	/*
@@ -230,19 +228,48 @@ public class Stemmer {
 	 * k.
 	 */
 
-	private final void setto(String s) {
-		int l = s.length();
-		int o = j + 1;
-		for (int i = 0; i < l; i++)
-			b[o + i] = s.charAt(i);
-		k = j + l;
+	/**
+	 * Remove stopwords. read stopwords from a file. Added by hector.
+	 */
+	public void readStopword() {
+		BufferedReader br = null;
+		BufferedWriter bw = null;
+		String b = null;
+		stopwords = new HashSet<String>();
+		try {
+			br = new BufferedReader(new FileReader("runtime/stopwords.txt"));
+			bw = new BufferedWriter(new FileWriter("runtime/log.txt"));
+			while (null != (b = br.readLine())) {
+				b.trim();
+				if (0 < b.length() && '#' != b.charAt(0)) {
+					stopwords.add(b);
+					bw.write(b);
+					bw.newLine();
+					bw.flush();
+				}
+				// System.out.println(b);
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				bw.close();
+				br.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/* r(s) is used further down. */
 
-	private final void r(String s) {
-		if (m() > 0)
-			setto(s);
+	/**
+	 * Reset i to 0. Just a patch. Added by hector.
+	 */
+	public void resetIndex() {
+		i = 0;
 	}
 
 	/*
@@ -256,6 +283,42 @@ public class Stemmer {
 	 * mess
 	 * 
 	 * meetings -> meet
+	 */
+
+	private final void setto(String s) {
+		int l = s.length();
+		int o = j + 1;
+		for (int i = 0; i < l; i++)
+			b[o + i] = s.charAt(i);
+		k = j + l;
+	}
+
+	/* step2() turns terminal y to i when there is another vowel in the stem. */
+
+	/**
+	 * Stem the word placed into the Stemmer buffer through calls to add().
+	 * Returns true if the stemming process resulted in a word different from
+	 * the input. You can retrieve the result with
+	 * getResultLength()/getResultBuffer() or toString().
+	 */
+	public void stem() {
+		k = i - 1;
+		if (k > 1) {
+			step1();
+			step2();
+			step3();
+			step4();
+			step5();
+			step6();
+		}
+		i_end = k + 1;
+		i = 0;
+	}
+
+	/*
+	 * step3() maps double suffices to single ones. so -ization ( = -ize plus
+	 * -ation) maps to -ize etc. note that the string before the suffix must
+	 * give m() > 0.
 	 */
 
 	private final void step1() {
@@ -290,18 +353,14 @@ public class Stemmer {
 		}
 	}
 
-	/* step2() turns terminal y to i when there is another vowel in the stem. */
+	/* step4() deals with -ic-, -full, -ness etc. similar strategy to step3. */
 
 	private final void step2() {
 		if (ends("y") && vowelinstem())
 			b[k] = 'i';
 	}
 
-	/*
-	 * step3() maps double suffices to single ones. so -ization ( = -ize plus
-	 * -ation) maps to -ize etc. note that the string before the suffix must
-	 * give m() > 0.
-	 */
+	/* step5() takes off -ant, -ence etc., in context <c>vcvc<v>. */
 
 	private final void step3() {
 		if (k == 0)
@@ -409,7 +468,7 @@ public class Stemmer {
 		}
 	}
 
-	/* step4() deals with -ic-, -full, -ness etc. similar strategy to step3. */
+	/* step6() removes a final -e if m() > 1. */
 
 	private final void step4() {
 		switch (b[k]) {
@@ -451,8 +510,6 @@ public class Stemmer {
 			break;
 		}
 	}
-
-	/* step5() takes off -ant, -ence etc., in context <c>vcvc<v>. */
 
 	private final void step5() {
 		if (k == 0)
@@ -530,8 +587,6 @@ public class Stemmer {
 			k = j;
 	}
 
-	/* step6() removes a final -e if m() > 1. */
-
 	private final void step6() {
 		j = k;
 		if (b[k] == 'e') {
@@ -544,75 +599,20 @@ public class Stemmer {
 	}
 
 	/**
-	 * Stem the word placed into the Stemmer buffer through calls to add().
-	 * Returns true if the stemming process resulted in a word different from
-	 * the input. You can retrieve the result with
-	 * getResultLength()/getResultBuffer() or toString().
+	 * After a word has been stemmed, it can be retrieved by toString(), or a
+	 * reference to the internal buffer can be retrieved by getResultBuffer and
+	 * getResultLength (which is generally more efficient.)
 	 */
-	public void stem() {
-		k = i - 1;
-		if (k > 1) {
-			step1();
-			step2();
-			step3();
-			step4();
-			step5();
-			step6();
-		}
-		i_end = k + 1;
-		i = 0;
+	public String toString() {
+		return new String(b, 0, i_end);
 	}
 
-	/**
-	 * Remove stopwords. read stopwords from a file. Added by hector.
-	 */
-	public void readStopword() {
-		BufferedReader br = null;
-		BufferedWriter bw = null;
-		String b = null;
-		stopwords = new HashSet<String>();
-		try {
-			br = new BufferedReader(new FileReader("runtime/stopwords.txt"));
-			bw = new BufferedWriter(new FileWriter("runtime/log.txt"));
-			while (null != (b = br.readLine())) {
-				b.trim();
-				if (0 < b.length() && '#' != b.charAt(0)) {
-					stopwords.add(b);
-					bw.write(b);
-					bw.newLine();
-					bw.flush();
-				}
-				// System.out.println(b);
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				bw.close();
-				br.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	/**
-	 * Judge stopword. Added by hector.
-	 */
-	public boolean isStopword() {
-		String word = new String(b, 0, i);
-		if (stopwords.contains(word))
-			return true;
+	private final boolean vowelinstem() {
+		int i;
+		for (i = 0; i <= j; i++)
+			if (!cons(i))
+				return true;
 		return false;
-	}
-
-	/**
-	 * Reset i to 0. Just a patch. Added by hector.
-	 */
-	public void resetIndex() {
-		i = 0;
 	}
 
 	/**

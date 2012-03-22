@@ -3,3 +3,5 @@
 /doc
 /runtime/*.png
 /runtime/log.txt
+/runtime/train*.txt
+/runtime/test*.txt

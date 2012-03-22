@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Set;
+
+import why.dm.knn.DocDI;
 
 /**
  * The Document class
@@ -15,46 +18,78 @@ import java.util.LinkedList;
  * @version $Rev$ $Date$
  */
 public class Document {
-	// 文件路径
-	private String path;
 	// 所属分类
 	private int classify = -1;
 	// 相对于每个类别的相似度
 	private ArrayList<Double> classifyValues = new ArrayList<Double>();
-	// 包括序号和计数
-	private HashMap<Integer, Integer> hits = new HashMap<Integer, Integer>();
 	// Only for debug.
 	private LinkedList<Integer> hitIndices = new LinkedList<Integer>();
+	// 包括序号和计数
+	private HashMap<Integer, Integer> hits = new HashMap<Integer, Integer>();
+	// 文件路径
+	private String path;
+	// the distances between this doc with the rest docs 该文档与其他文档的距离，以及其他文档的指针
+	private Set<DocDI> docDIs = null;
+	// the length of doc
+	private Double length = -1.0;
 
-	public String getPath() {
-		return path;
-	}
+	// 文档与其所属类的相似度(加权相似度)
+	private Double sim = -1.0;
 
-	public void setPath(String value) {
-		path = value;
-	}
-
-	public int getClassify() {
-		return classify;
-	}
-
-	public void setClassify(int value) {
-		classify = value;
-	}
-
-	public HashMap<Integer, Integer> getHits() {
-		return hits;
-	}
-	
-	public ArrayList<Double> getClassifyValues() {
-		return classifyValues;
-	}
-	
 	public void addClassifyValue(double value) {
 		classifyValues.add(value);
 	}
 
-	public void InsertWord(Integer index) {
+	/**
+	 * @return the classify
+	 */
+	public int getClassify() {
+		return classify;
+	}
+
+	/**
+	 * @return the classifyValues
+	 */
+	public ArrayList<Double> getClassifyValues() {
+		return classifyValues;
+	}
+
+	/**
+	 * @return the docDIs
+	 */
+	public Set<DocDI> getDocDIs() {
+		return docDIs;
+	}
+
+	/**
+	 * @return the hits
+	 */
+	public HashMap<Integer, Integer> getHits() {
+		return hits;
+	}
+
+	/**
+	 * @return the length
+	 */
+	public Double getLength() {
+		return length;
+	}
+
+	/**
+	 * @return the path
+	 */
+	public String getPath() {
+		return path;
+	}
+
+	/**
+	 * @return the sim
+	 */
+	public Double getSim() {
+		return sim;
+	}
+
+	public void insertTerm(Integer index) {
 		hitIndices.push(index);
 		if (hits.containsKey(index)) {
 			Integer count = hits.remove(index);
@@ -62,6 +97,46 @@ public class Document {
 		} else {
 			hits.put(index, 1);
 		}
+	}
+
+	/**
+	 * @param classify
+	 *            the classify to set
+	 */
+	public void setClassify(int classify) {
+		this.classify = classify;
+	}
+
+	/**
+	 * @param docDIs
+	 *            the docDIs to set
+	 */
+	public void setDocDIs(Set<DocDI> docDIs) {
+		this.docDIs = docDIs;
+	}
+
+	/**
+	 * @param length
+	 *            the length to set
+	 */
+	public void setLength(Double length) {
+		this.length = length;
+	}
+
+	/**
+	 * @param path
+	 *            the path to set
+	 */
+	public void setPath(String path) {
+		this.path = path;
+	}
+
+	/**
+	 * @param sim
+	 *            the sim to set
+	 */
+	public void setSim(Double sim) {
+		this.sim = sim;
 	}
 
 	public void trace() {
@@ -92,10 +167,4 @@ public class Document {
 		System.out.println();
 	}
 
-	/*
-	 * protected HashMap<Integer, Integer> getWords() { return words; }
-	 * 
-	 * protected void setWords(HashMap<Integer, Integer> value) { words = value;
-	 * }
-	 */
 }
