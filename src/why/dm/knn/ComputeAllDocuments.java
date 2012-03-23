@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import sun.font.FontConfigManager.FcCompFont;
 import why.dm.Classifier;
 import why.dm.Document;
 import why.dm.Feature;
