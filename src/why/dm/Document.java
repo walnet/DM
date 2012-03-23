@@ -30,10 +30,8 @@ public class Document {
 	// Only for debug.
 	private LinkedList<Integer> hitIndices = new LinkedList<>();
 
-	// <序号, 特征项频率tf>
+	// <term序号, term在本文档中的命中次数>
 	private HashMap<Integer, Integer> hits = new HashMap<>();
-	// <序号, 逆文档频率idf>
-	private HashMap<Integer, Double> idfs = new HashMap<>();
 	// 文件路径
 	private String path;
 	// the distances between this doc with the rest docs 该文档与其他文档的距离，以及其他文档的指针

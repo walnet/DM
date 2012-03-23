@@ -15,15 +15,19 @@ import java.util.LinkedList;
  */
 public class Feature {
 	// 各类中包含的文档。第一维是分类索引。内容同documents一致。
-	private ArrayList<LinkedList<Document>> classifyDocuments = new ArrayList<LinkedList<Document>>();
+	private ArrayList<LinkedList<Document>> classifyDocuments = new ArrayList<>();
 	// 各类中包含的term命中次数。第一维是分类索引。HashMap中Key是term的全局索引，Value是类中命中总和次数
-	private ArrayList<HashMap<Integer, Integer>> classifyHits = new ArrayList<HashMap<Integer, Integer>>();
+	private ArrayList<HashMap<Integer, Integer>> classifyHits = new ArrayList<>();
 	// 所有文档
-	private LinkedList<Document> documents = new LinkedList<Document>();
+	private LinkedList<Document> documents = new LinkedList<>();
 	// 各类中的term总命中次数，也就是把所有一个类中的所有classifyHits加起来。第一维是分类索引
-	private ArrayList<Integer> classifyTotalHits = new ArrayList<Integer>();
-	// term命中次数
-	private HashMap<Integer, Integer> hits = new HashMap<Integer, Integer>();
+	private ArrayList<Integer> classifyTotalHits = new ArrayList<>();
+	// <term序号, term在训练集中的命中次数>
+	private HashMap<Integer, Integer> hits = new HashMap<>();
+	// <term序号, term的文档频率df>
+	private HashMap<Integer, Integer> dfs = new HashMap<>();
+	// <term序号, term的逆文档频率idf>
+	private HashMap<Integer, Double> idfs = new HashMap<>();
 	// 所有term命中总次数之和
 	private int totalHit = 0;
 
@@ -57,6 +61,13 @@ public class Feature {
 	}
 
 	/**
+	 * @return the dfs
+	 */
+	public HashMap<Integer, Integer> getDfs() {
+		return dfs;
+	}
+
+	/**
 	 * @return the documents
 	 */
 	public LinkedList<Document> getDocuments() {
@@ -68,6 +79,13 @@ public class Feature {
 	 */
 	public HashMap<Integer, Integer> getHits() {
 		return hits;
+	}
+
+	/**
+	 * @return the idfs
+	 */
+	public HashMap<Integer, Double> getIdfs() {
+		return idfs;
 	}
 
 	/**
@@ -104,6 +122,14 @@ public class Feature {
 	}
 
 	/**
+	 * @param dfs
+	 *            the dfs to set
+	 */
+	public void setDfs(HashMap<Integer, Integer> dfs) {
+		this.dfs = dfs;
+	}
+
+	/**
 	 * @param documents
 	 *            the documents to set
 	 */
@@ -117,6 +143,14 @@ public class Feature {
 	 */
 	public void setHits(HashMap<Integer, Integer> hits) {
 		this.hits = hits;
+	}
+
+	/**
+	 * @param idfs
+	 *            the idfs to set
+	 */
+	public void setIdfs(HashMap<Integer, Double> idfs) {
+		this.idfs = idfs;
 	}
 
 	/**

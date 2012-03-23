@@ -50,7 +50,9 @@ public class FeatureExtraction {
 	/******************* 以下为训练文档相关 ********************/
 
 	// 训练文档特有特征（不包括测试文档）
-	Feature trainingFeature = new Feature();
+	private Feature trainingFeature = new Feature();
+	// IDF中的m系数
+	public static final double IDF_M = 10.;
 
 	/******************* 以上为训练文档相关 ********************/
 
@@ -402,6 +404,8 @@ public class FeatureExtraction {
 		// boolean testFull = false;
 		testDocuments.clear();
 		trainingFeature.clear();
+		HashMap<Integer, Integer> dfs = trainingFeature.getDfs();
+		HashMap<Integer, Double> idfs = trainingFeature.getIdfs();
 		int totalHit = 0;
 		for (int classify = 0; allDocuments.size() > classify; ++classify) {
 			ArrayList<Integer> classifyTotalHits = trainingFeature
@@ -432,11 +436,13 @@ public class FeatureExtraction {
 
 					/******************* 以下为统计训练集数据 ********************/
 
+					// term在每个文档中的df只计算一次
+					boolean firstDf = true;
 					// 将项加入分类索引
-					Iterator<Integer> iterator = currentDocument.getHits()
+					Iterator<Integer> hitIterator = currentDocument.getHits()
 							.keySet().iterator();
-					while (iterator.hasNext()) {
-						Integer currentKey = iterator.next();
+					while (hitIterator.hasNext()) {
+						Integer currentKey = hitIterator.next();
 						Integer currentCount = currentDocument.getHits().get(
 								currentKey);
 
@@ -470,6 +476,17 @@ public class FeatureExtraction {
 								.get(classify);
 						classifyTotalHits.set(classify,
 								originalClassifyTotalHits + currentCount);
+						
+						// DF
+						if (firstDf) {
+							Integer value = dfs.get(currentKey);
+							if (null != value) {
+								dfs.put(currentKey, value + 1);
+							} else {
+								dfs.put(currentKey, 1);
+							}
+							firstDf = false;
+						}
 					}
 
 					/******************* 以上为统计训练集数据 ********************/
@@ -479,6 +496,21 @@ public class FeatureExtraction {
 
 			}
 		}
+		System.out.println("IDF:");
+		int current = 0;
+		Iterator<Integer> iterator = dfs.keySet().iterator();
+		while (iterator.hasNext()) {
+			Integer key = iterator.next();
+			Integer df = dfs.get(key);
+			double idf = Math.log(1 + IDF_M / (double) df);
+			idfs.put(key, idf);
+			System.out.print("<" + key + ":" + idf + ">");
+			if (0 == current % 5) {
+				System.out.println();
+			}
+			++current;
+		}
+		System.out.println();
 		trainingFeature.setTotalHit(totalHit);
 	}
 
