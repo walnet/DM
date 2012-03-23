@@ -331,9 +331,10 @@ public class Compute {
 		while (iterator.hasNext()) {// 一个个取出文档
 			doc = iterator.next();
 			HashMap<Integer, Integer> docHits = doc.getHits();
-			for (int j = 0; j < dimension; j++) {
-				if (docHits.containsKey(j))
-					dimenList.set(j, dimenList.get(j) + docHits.get(j));
+			Iterator<Integer> keyiIterator = docHits.keySet().iterator();
+			while (keyiIterator.hasNext()) {
+				Integer key = (Integer) keyiIterator.next();
+				dimenList.set(key, dimenList.get(key) + docHits.get(key));
 			}
 		}
 		Double cpLength = 0.0;// 用于存储中心点长度，以便于归一中心点时使用
