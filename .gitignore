@@ -1,7 +1,5 @@
 
 /bin
 /doc
-/runtime/*.png
+/output*
 /runtime/log.txt
-/runtime/train*.txt
-/runtime/test*.txt

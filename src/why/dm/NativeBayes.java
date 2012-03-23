@@ -68,10 +68,10 @@ public class NativeBayes extends Classifier {
 		// 累乘转成log累加
 		// double pwc = 1;
 		double pwc = 0;
-		Iterator<Integer> iterTerm = testDocument.getHits().keySet().iterator();
-		while (iterTerm.hasNext()) {
+		Iterator<Integer> termIterator = testDocument.getHits().keySet().iterator();
+		while (termIterator.hasNext()) {
 			Integer currentTerm;
-			currentTerm = iterTerm.next();
+			currentTerm = termIterator.next();
 			HashMap<Integer, Integer> currentClassifyHit = featureExtraction
 					.getTrainingFeature().getClassifyHits().get(classify);
 
@@ -108,7 +108,7 @@ public class NativeBayes extends Classifier {
 	 */
 	@Override
 	public void test() {
-		redirectToNewOutput("runtime/test_" + debugFileName + ".txt");
+		redirectToNewOutput("test_" + debugFileName + ".txt");
 		for (int classify = 0; featureExtraction.getClassifyNames().size() > classify; ++classify) {
 			Pcs.add(getPc(classify));
 			// IntPtr diff = new IntPtr(0);
@@ -129,10 +129,13 @@ public class NativeBayes extends Classifier {
 								.getClassifyTotalHits().get(classify) + ".");
 			}
 		}
-		Iterator<Document> iter = featureExtraction.getTestDocuments()
+		if (debugTrace) {
+			initResultMatrix(); // 初始化结果矩阵
+		}
+		Iterator<Document> iterator = featureExtraction.getTestDocuments()
 				.iterator();
-		while (iter.hasNext()) {
-			Document testDocument = iter.next();
+		while (iterator.hasNext()) {
+			Document testDocument = iterator.next();
 			int totalClassify = featureExtraction.getClassifyNames().size();
 			double maxPcd = Double.NEGATIVE_INFINITY;
 			int maxClassify = -1;
@@ -157,13 +160,16 @@ public class NativeBayes extends Classifier {
 				if (maxClassify == testDocument.getClassify()) {
 					++debugCorrect;
 				}
+				accumulateResultMatrix(maxClassify, testDocument.getClassify()); // 计算结果矩阵个元素值，用于矩阵输出
 			}
-			testDocument.setClassify(maxClassify);
+			testDocument.setGuessClassify(maxClassify);
 		}
 		if (debugTrace) {
 			System.out.println("Finished: " + debugCorrect
 					+ " correct of total " + debugTotal + "("
 					+ (double) debugCorrect / (double) debugTotal + ").");
+			calculateResultMatrix(); // 计算比例
+			outputResultMaxtrix(); // 输出结果矩阵
 		} else {
 			System.out.println("Finished!");
 		}
@@ -184,7 +190,7 @@ public class NativeBayes extends Classifier {
 	 */
 	@Override
 	public void train() {
-		redirectToNewOutput("runtime/train_" + debugFileName + ".txt");
+		redirectToNewOutput("train_" + debugFileName + ".txt");
 		System.out.println("Nothing to train.");
 		redirectToOldOutput();
 	}

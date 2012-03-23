@@ -18,20 +18,20 @@ public class Feature {
 	private ArrayList<LinkedList<Document>> classifyDocuments = new ArrayList<LinkedList<Document>>();
 	// 各类中包含的term命中次数。第一维是分类索引。HashMap中Key是term的全局索引，Value是类中命中总和次数
 	private ArrayList<HashMap<Integer, Integer>> classifyHits = new ArrayList<HashMap<Integer, Integer>>();
-	// 各类中的term总命中次数，也就是把所有一个类中的所有classifyHits加起来。第一维是分类索引
-	private ArrayList<Integer> classifyTotalHits = new ArrayList<Integer>();
 	// 所有文档
 	private LinkedList<Document> documents = new LinkedList<Document>();
+	// 各类中的term总命中次数，也就是把所有一个类中的所有classifyHits加起来。第一维是分类索引
+	private ArrayList<Integer> classifyTotalHits = new ArrayList<Integer>();
 	// term命中次数
 	private HashMap<Integer, Integer> hits = new HashMap<Integer, Integer>();
 	// 所有term命中总次数之和
 	private int totalHit = 0;
 
 	public void clear() {
-		classifyHits.clear();
 		classifyDocuments.clear();
-		classifyTotalHits.clear();
+		classifyHits.clear();
 		documents.clear();
+		classifyTotalHits.clear();
 		hits.clear();
 	}
 

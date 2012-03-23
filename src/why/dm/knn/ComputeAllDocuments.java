@@ -1,3 +1,6 @@
+/**
+ * Copyright (C) 2012 why
+ */
 package why.dm.knn;
 
 import java.util.ArrayList;
@@ -8,9 +11,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import sun.font.FontConfigManager.FcCompFont;
+import why.dm.Classifier;
 import why.dm.Document;
 import why.dm.Feature;
 import why.dm.FeatureExtraction;
+import why.dm.util.DocumentDouble;
 
 /**
  * 
@@ -26,7 +32,7 @@ public class ComputeAllDocuments {
 	 * @param fe
 	 *            FeatureExtraction
 	 */
-	public static void ComputeAllDistanceBetweenDocs(FeatureExtraction fe) {
+	private static void ComputeAllDistanceBetweenDocs(FeatureExtraction fe) {
 		List<Document> docList = new ArrayList<Document>();// 所有文档
 
 		Feature trainingFeature = fe.getTrainingFeature();
@@ -51,15 +57,15 @@ public class ComputeAllDocuments {
 			if (k % 40 == 0)
 				System.out.println();// debug
 			Document doc = docList.get(k);
-			Set<DocDI> docDIs = new TreeSet<DocDI>(new DocDIDescComparator());// 自定义比较规则,使其降序排列
+			Set<DocumentDouble> documentDistances = new TreeSet<DocumentDouble>();// 自定义比较规则,使其降序排列
 			distances[k] = new Double[NUM_OF_DOCS];// 初始化第二维度
 			if (k > 0) {
 				// 由后面的计算可知，只计算当前文档与下一个序号文档的距离，
 				// 与序号在当前序号之前的文档的距离其实在前面已经计算过，
 				// 所以distances[k][i]=distances[i][k]
 				for (int i = 0; i < k; i++) {
-					DocDI di2 = new DocDI(docList.get(i), distances[i][k]);
-					docDIs.add(di2);
+					DocumentDouble di2 = new DocumentDouble(docList.get(i), distances[i][k]);
+					documentDistances.add(di2);
 				}
 			}
 			/*************** 计算文档长度length *********************/
@@ -68,16 +74,91 @@ public class ComputeAllDocuments {
 
 			for (int m = k + 1; m < docList.size(); m++) {
 				Document tempDoc = docList.get(m);
-				Double len = Compute.computeDistanceByMultiply(doc, tempDoc,
+				Double len = Compute.computeDistanceByProduct(doc, tempDoc,
 						dimension);// 计算2文档间的距离
 				distances[k][m] = len;// 赋值
-				DocDI di = new DocDI(tempDoc, len);
-				docDIs.add(di);
+				DocumentDouble di = new DocumentDouble(tempDoc, len);
+				documentDistances.add(di);
 			}
-			doc.setDocDIs(docDIs);
+			doc.setDocumentDistances(documentDistances);
 			/********** 以下计算每个文档与自己所在类的加权相似度 ***********/
 			Compute.computeSim(doc);
 		}
+	}
+
+	/**
+	 * 计算每个测试文档与训练文档的距离（用向量积计算），存储在测试文档的DocDIs中
+	 * 
+	 * @param fe
+	 *            FeatureExtraction对象
+	 */
+	public static void ComputeDistanceFromTestDocsToTrainDocs(Classifier classifier) {
+		FeatureExtraction featureExtraction = classifier.getFeatureExtraction();
+		List<Document> docList = new LinkedList<Document>();// 所有文档
+
+		Feature trainingFeature = featureExtraction.getTrainingFeature();
+		ArrayList<LinkedList<Document>> classifyDocs = trainingFeature
+				.getClassifyDocuments();
+		int dimension = trainingFeature.getHits().size();// 训练集总维度数
+
+		for (int i = 0; i < classifyDocs.size(); i++) {// 遍历每个类
+			Iterator<Document> iterator = classifyDocs.get(i).iterator();
+			while (iterator.hasNext()) {
+				docList.add(iterator.next());
+			}
+		}
+
+		classifier.initResultMatrix();// 初始化结果矩阵
+		int currentDocument = 0;
+		System.out.println("ComputeDistanceFromTestDocsToTrainDocs");
+		LinkedList<Document> testDocs = featureExtraction.getTestDocuments();// 测试集
+		Iterator<Document> testIterator = testDocs.iterator();// 测试集iterator
+		Iterator<Document> trainIterator;
+		int classsifyRight = 0;
+		int numOfTestDocs = testDocs.size();
+		//DocDIDescComparator comparator = new DocDIDescComparator();
+		Document testDocument = null;
+		Document lastTestDocument = null;
+		while (testIterator.hasNext()) {
+			lastTestDocument = testDocument;
+			testDocument = testIterator.next();
+			//Set<DocumentDouble> docDIs = new TreeSet<DocumentDouble>(comparator);// 自定义比较规则,使其降序排列
+			Set<DocumentDouble> documentDistances = new TreeSet<DocumentDouble>();// 自定义比较规则,使其降序排列
+			trainIterator = docList.iterator();// 训练集合iterator
+			while (trainIterator.hasNext()) {
+				Document trainDoc = (Document) trainIterator.next();
+				DocumentDouble di = new DocumentDouble(trainDoc,
+						Compute.computeDistanceByProduct(testDocument, trainDoc,
+								dimension));
+				//if (0 > comparator.compare(di, docDIs.iterator().next()))
+					//docDIs.add(di);
+				//if (Compute.NUM_KNN > docDIs.size())
+				documentDistances.add(di);
+			}
+//			if (0 == currentDocument % 10) {
+//				System.out.print(currentDocument + " ");
+//				if (0 == currentDocument % 200) {
+//					System.out.println();
+//				}
+//			}
+			testDocument.setDocumentDistances(documentDistances);
+			
+			int guessClassify = Compute.findClassifyByKnnWithProduct(
+					testDocument, featureExtraction.getTrainingFeature().getClassifyDocuments().size());
+			int realClassify = testDocument.getClassify();
+			classifier.accumulateResultMatrix(guessClassify, realClassify);// 计算结果矩阵个元素值，用于矩阵输出
+			if (guessClassify == realClassify)
+				classsifyRight++;
+			
+			if (null != lastTestDocument)
+				lastTestDocument.setDocumentDistances(null);
+			++currentDocument;
+		}
+		System.out.println("KNN: " + classsifyRight + " correct of total "
+				+ numOfTestDocs + "("
+				+ (classsifyRight / (numOfTestDocs + 0.0)) + ")");
+		classifier.calculateResultMatrix(); // 计算比例
+		classifier.outputResultMaxtrix();// 输出结果矩阵
 	}
 
 	/**
@@ -89,7 +170,7 @@ public class ComputeAllDocuments {
 	 *            维度
 	 * @return 中心点集合
 	 */
-	public static ArrayList<CenterPoint> computeAllCenterPoints(
+	private static ArrayList<CenterPoint> computeAllCenterPoints(
 			ArrayList<LinkedList<Document>> classifyDocs, int dimension) {
 		ArrayList<CenterPoint> cps = new ArrayList<CenterPoint>();
 		CenterPoint cp;
@@ -107,15 +188,18 @@ public class ComputeAllDocuments {
 	 *            按类分的文档集合
 	 * @param dimension
 	 *            维度集
+	 * @param isUnification
+	 *            是否要对中心点进行归一化，true为是
 	 * @return 中心点集合
 	 */
 	public static void computeAllCenterPointsByAverage(
 			LinkedList<CenterPoint> centerPoints,
-			ArrayList<LinkedList<Document>> classifyDocs, int dimension) {
+			ArrayList<LinkedList<Document>> classifyDocs, int dimension,
+			boolean isUnification) {
 		CenterPoint cp;
 		for (int i = 0; i < classifyDocs.size(); i++) {
 			cp = Compute.computeCenterPointByAverage(classifyDocs.get(i),
-					dimension);
+					dimension, isUnification);
 			centerPoints.add(cp);
 		}
 	}
@@ -134,7 +218,7 @@ public class ComputeAllDocuments {
 	public static int findClassifyByCenterPoints(Document d,
 			List<CenterPoint> cps, int dimension) {
 		Double max = Double.NEGATIVE_INFINITY;
-		Double min = Double.MAX_VALUE;
+		// Double min = Double.MAX_VALUE;
 		Double s;
 		int classify = -2;
 		int size = cps.size();
@@ -174,9 +258,9 @@ public class ComputeAllDocuments {
 		Double docLength = d.getLength();
 		Double max = Double.NEGATIVE_INFINITY;// 负无限小
 		int classify = -2;
-		Iterator<CenterPoint> iter = cps.iterator();
-		while (iter.hasNext()) {
-			CenterPoint cp = iter.next();
+		Iterator<CenterPoint> iterator = cps.iterator();
+		while (iterator.hasNext()) {
+			CenterPoint cp = iterator.next();
 			Double tmpDouble = Compute.computeSimWithCenterPointByCOS(docHits,
 					docLength, cp, dimension);
 			if (tmpDouble > max) {
@@ -188,15 +272,48 @@ public class ComputeAllDocuments {
 	}
 
 	/**
+	 * 通过KNN方法来预测文档所属类别
+	 * 
+	 * @param testDocs
+	 *            测试文档集
+	 * @param NumOfClassify
+	 *            类别数
+	 */
+	private static void forecastClassifyByKnn(LinkedList<Document> testDocs,
+			int NumOfClassify, Classifier cf) {
+		int classsifyRight = 0;
+		int numOfTestDocs = testDocs.size();
+		cf.initResultMatrix();// 初始化结果矩阵
+		int currentDocument = 0;
+		Iterator<Document> testDocsIterator = testDocs.iterator();
+		while (testDocsIterator.hasNext()) {
+			Document document = testDocsIterator.next();
+			int forecastClassify = Compute.findClassifyByKnnWithProduct(
+					document, NumOfClassify);
+			int realClassify = document.getClassify();
+			cf.accumulateResultMatrix(forecastClassify, realClassify);// 计算结果矩阵个元素值，用于矩阵输出
+			if (forecastClassify == realClassify)
+				classsifyRight++;
+			++currentDocument;
+			System.out.print(currentDocument + " ");
+		}
+		System.out.println("KNN: " + classsifyRight + " correct of total "
+				+ numOfTestDocs + "("
+				+ (classsifyRight / (numOfTestDocs + 0.0)) + ")");
+		cf.calculateResultMatrix(); // 计算比例
+		cf.outputResultMaxtrix();// 输出结果矩阵
+	}
+
+	/**
 	 * 计算指定集合中各文档自己的长度
 	 * 
 	 * @param docs
 	 *            文档集合
 	 */
 	public static void computeLengthOfEachDocs(LinkedList<Document> docs) {
-		Iterator<Document> iter = docs.iterator();
-		while (iter.hasNext()) {
-			Compute.computeDocLength(iter.next());
+		Iterator<Document> iterator = docs.iterator();
+		while (iterator.hasNext()) {
+			Compute.computeDocLength(iterator.next());
 		}
 	}
 

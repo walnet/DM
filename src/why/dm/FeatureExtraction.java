@@ -13,6 +13,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.TreeSet;
 
+import why.dm.util.IntegerDouble;
+
 /**
  * 遍历文件后提取词项和选择特征
  * 
@@ -21,8 +23,7 @@ import java.util.TreeSet;
  */
 public class FeatureExtraction {
 
-	// 以下为所有文档共有（包括训练文档和测试文档）
-	// begin
+	/******************* 以下为所有文档共有（包括训练文档和测试文档） ********************/
 
 	// 所有文档集合
 	private ArrayList<LinkedList<Document>> allDocuments = new ArrayList<LinkedList<Document>>();
@@ -35,28 +36,25 @@ public class FeatureExtraction {
 	// Index of termsIndices. Only for debug.
 	private int currentTermIndex = 0;
 
-	// end
+	/******************* 以上为所有文档共有（包括训练文档和测试文档） ********************/
 
-	// 以下为测试文档相关
-	// begin
+	/******************* 以下为测试文档相关 ********************/
 
 	// 测试文档集合
 	private LinkedList<Document> testDocuments = new LinkedList<Document>();
 	// 测试文档比例（剩下的都是训练文档）
 	private double testProportion = 0.01;
 
-	// end
+	/******************* 以上为测试文档相关 ********************/
 
-	// 以下为训练文档相关
-	// begin
+	/******************* 以下为训练文档相关 ********************/
 
 	// 训练文档特有特征（不包括测试文档）
 	Feature trainingFeature = new Feature();
 
-	// end
+	/******************* 以上为训练文档相关 ********************/
 
-	// 以下为特征选择相关
-	// begin
+	/******************* 以下为特征选择相关 ********************/
 
 	// ECE选择的特征（即被选中的term）及其ECE值
 	private TreeSet<IntegerDouble> eces = new TreeSet<IntegerDouble>();
@@ -65,17 +63,16 @@ public class FeatureExtraction {
 	// 特征选择算法保留的特征数
 	private int totalSelectedFeatures = 500;
 
-	// end
+	/******************* 以上为特征选择相关 ********************/
 
-	// 以下为调试相关
-	// begin
+	/********************* 以下为调试相关 *********************/
 
 	// 当前次数
 	private int debugCount = 0;
 	// 打开调试
 	private boolean debugTrace = false;
 
-	// end
+	/********************* 以上为调试相关 *********************/
 
 	public void clear() {
 		allDocuments.clear();
@@ -96,9 +93,9 @@ public class FeatureExtraction {
 		s.readStopword();
 		for (int classify = 0; allDocuments.size() > classify; ++classify) {
 
-			Iterator<Document> iter = allDocuments.get(classify).iterator();
-			while (iter.hasNext()) {
-				Document currentDocument = iter.next();
+			Iterator<Document> iterator = allDocuments.get(classify).iterator();
+			while (iterator.hasNext()) {
+				Document currentDocument = iterator.next();
 				if (debugTrace) {
 					System.out.print(currentDocument.getPath() + ": ");
 				}
@@ -377,26 +374,26 @@ public class FeatureExtraction {
 	 */
 	public void selectFeature() {
 		int currentTerm = 0;
-		Iterator<String> iter = terms.keySet().iterator();
-		while (iter.hasNext()) {
-			Integer i = terms.get(iter.next());
+		Iterator<String> iterator = terms.keySet().iterator();
+		while (iterator.hasNext()) {
+			Integer i = terms.get(iterator.next());
 			eces.add(new IntegerDouble(i, ece(i)));
-//			if (0 == currentTerm % 10000) {
-//				System.out.print(currentTerm + " ");
-//			}
-//			if (0 == currentTerm % 200000) {
-//				System.out.println();
-//			}
+			// if (0 == currentTerm % 10000) {
+			// System.out.print(currentTerm + " ");
+			// }
+			// if (0 == currentTerm % 200000) {
+			// System.out.println();
+			// }
 			++currentTerm;
 		}
 
 		// Copy to selectedFeatures
 		int copied = 0;
-		Iterator<IntegerDouble> iter2 = eces.iterator();
-		while (iter2.hasNext()) {
+		Iterator<IntegerDouble> iterator2 = eces.iterator();
+		while (iterator2.hasNext()) {
 			if (totalSelectedFeatures < copied)
 				break;
-			selectedFeatures.add(iter2.next().getIntValue());
+			selectedFeatures.add(iterator2.next().getIntValue());
 			++copied;
 		}
 	}
@@ -420,11 +417,11 @@ public class FeatureExtraction {
 			int processed = 0;
 			LinkedList<Document> currentClassifyDocuments = allDocuments
 					.get(classify);
-			Iterator<Document> iterDocument = currentClassifyDocuments
+			Iterator<Document> documentIterator = currentClassifyDocuments
 					.iterator();
 			Document currentDocument;
-			while (iterDocument.hasNext()) {
-				currentDocument = iterDocument.next();
+			while (documentIterator.hasNext()) {
+				currentDocument = documentIterator.next();
 				int partSize = (int) (currentClassifyDocuments.size() * testProportion);
 				int partBegin = partSize * testPart;
 				if (partBegin <= processed && partBegin + partSize > processed) {
@@ -432,47 +429,53 @@ public class FeatureExtraction {
 				} else {
 					classifyDocuments.get(classify).add(currentDocument);
 					documents.add(currentDocument);
+
+					/******************* 以下为统计训练集数据 ********************/
+
+					// 将项加入分类索引
+					Iterator<Integer> iterator = currentDocument.getHits()
+							.keySet().iterator();
+					while (iterator.hasNext()) {
+						Integer currentKey = iterator.next();
+						Integer currentCount = currentDocument.getHits().get(
+								currentKey);
+
+						// Total hit
+						totalHit += currentCount;
+
+						// Hits
+						HashMap<Integer, Integer> hits = trainingFeature
+								.getHits();
+						Integer originalHits = hits.get(currentKey);
+						if (null == originalHits) {
+							hits.put(currentKey, currentCount);
+						} else {
+							hits.put(currentKey, originalHits + currentCount);
+						}
+
+						// Classify hits
+						HashMap<Integer, Integer> currentClassifyHits = classifyHits
+								.get(classify);
+						Integer originalClassifyHits = currentClassifyHits
+								.get(currentKey);
+						if (null == originalClassifyHits) {
+							currentClassifyHits.put(currentKey, currentCount);
+						} else {
+							currentClassifyHits.put(currentKey,
+									originalClassifyHits + currentCount);
+						}
+
+						// Classify total hits
+						Integer originalClassifyTotalHits = classifyTotalHits
+								.get(classify);
+						classifyTotalHits.set(classify,
+								originalClassifyTotalHits + currentCount);
+					}
+
+					/******************* 以上为统计训练集数据 ********************/
+
 				}
 				++processed;
-
-				// 将项加入分类索引
-				Iterator<Integer> iter = currentDocument.getHits().keySet()
-						.iterator();
-				while (iter.hasNext()) {
-					Integer currentKey = iter.next();
-					Integer currentCount = currentDocument.getHits().get(
-							currentKey);
-
-					// Total hit
-					totalHit += currentCount;
-
-					// Hits
-					HashMap<Integer, Integer> hits = trainingFeature.getHits();
-					Integer originalHits = hits.get(currentKey);
-					if (null == originalHits) {
-						hits.put(currentKey, currentCount);
-					} else {
-						hits.put(currentKey, originalHits + currentCount);
-					}
-
-					// Classify hits
-					HashMap<Integer, Integer> currentClassifyHits = classifyHits
-							.get(classify);
-					Integer originalClassifyHits = currentClassifyHits
-							.get(currentKey);
-					if (null == originalClassifyHits) {
-						currentClassifyHits.put(currentKey, currentCount);
-					} else {
-						currentClassifyHits.put(currentKey,
-								originalClassifyHits + currentCount);
-					}
-
-					// Classify total hits
-					Integer originalClassifyTotalHits = classifyTotalHits
-							.get(classify);
-					classifyTotalHits.set(classify, originalClassifyTotalHits
-							+ currentCount);
-				}
 
 			}
 		}
@@ -506,19 +509,19 @@ public class FeatureExtraction {
 		for (int classify = 0; allDocuments.size() > classify; ++classify) {
 			LinkedList<Document> currentClassifyDocuments = allDocuments
 					.get(classify);
-			Iterator<Document> iterDocument = currentClassifyDocuments
+			Iterator<Document> documentIterator = currentClassifyDocuments
 					.iterator();
-			while (iterDocument.hasNext()) {
-				iterDocument.next().trace(classifyNames, termIndices);
+			while (documentIterator.hasNext()) {
+				documentIterator.next().trace(classifyNames, termIndices);
 			}
 		}
 	}
 
 	public void traceEce() {
 		int currentTerm = 0;
-		Iterator<IntegerDouble> iter = eces.iterator();
-		while (iter.hasNext() && 1000 > currentTerm) {
-			IntegerDouble id = iter.next();
+		Iterator<IntegerDouble> iterator = eces.iterator();
+		while (iterator.hasNext() && 1000 > currentTerm) {
+			IntegerDouble id = iterator.next();
 			System.out.println("Ece " + currentTerm++ + ": "
 					+ termIndices.get(id.getIntValue()) + "("
 					+ id.getIntValue() + "), " + id.getDoubleValue() + ". ");
@@ -527,9 +530,9 @@ public class FeatureExtraction {
 
 	public void traceTerm() {
 		int currentTerm = 0;
-		Iterator<String> iter = terms.keySet().iterator();
-		while (iter.hasNext()) {
-			String s = iter.next();
+		Iterator<String> iterator = terms.keySet().iterator();
+		while (iterator.hasNext()) {
+			String s = iterator.next();
 			if (500 > terms.get(s)) {// 0 == currentTerm % 50) {
 				System.out.print(s + ": " + terms.get(s) + ". ");
 			}

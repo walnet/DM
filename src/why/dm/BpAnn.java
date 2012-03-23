@@ -146,12 +146,15 @@ public class BpAnn extends Classifier {
 	 */
 	@Override
 	public void test() {
-		redirectToNewOutput("runtime/test_" + debugFileName + ".txt");
+		redirectToNewOutput("test_" + debugFileName + ".txt");
 		ArrayList<Integer> selectedFeatures = featureExtraction
 				.getSelectedFeatures();
 		int totalSelectedFeature = selectedFeatures.size();
 		// Only for debug
 		int currentDocument = 0;
+		if (debugTrace) {
+			initResultMatrix(); // 初始化结果矩阵
+		}
 		Iterator<Document> iterDocument = featureExtraction.getTestDocuments()
 				.iterator();
 		while (iterDocument.hasNext()) {
@@ -181,9 +184,18 @@ public class BpAnn extends Classifier {
 				System.out.println("(" + testDocument.getClassify() + ") "
 						+ testDocument.getPath().substring(lastIndex + 1)
 						+ ">> " + classify);
+				accumulateResultMatrix(classify, testDocument.getClassify()); // 计算结果矩阵个元素值，用于矩阵输出
 			}
 			++currentDocument;
+			testDocument.setGuessClassify(classify);
 		}
+		if (debugTrace) {
+			calculateResultMatrix(); // 计算比例
+			outputResultMaxtrix(); // 输出结果矩阵
+		} else {
+			System.out.println("Finished!");
+		}
+		redirectToOldOutput();
 	}
 
 	private int testInput(ArrayList<Double> inputs) {
@@ -225,7 +237,7 @@ public class BpAnn extends Classifier {
 	 */
 	@Override
 	public void train() {
-		redirectToNewOutput("runtime/train_" + debugFileName + ".txt");
+		redirectToNewOutput("train_" + debugFileName + ".txt");
 		ArrayList<Integer> selectedFeatures = featureExtraction
 				.getSelectedFeatures();
 		int totalSelectedFeature = selectedFeatures.size();
@@ -275,9 +287,9 @@ public class BpAnn extends Classifier {
 					inputs.add(0.);
 				}
 				HashMap<Integer, Integer> hits = trainingDocument.getHits();
-				Iterator<Integer> iterKey = hits.keySet().iterator();
-				while (iterKey.hasNext()) {
-					Integer key = iterKey.next();
+				Iterator<Integer> keyIterator = hits.keySet().iterator();
+				while (keyIterator.hasNext()) {
+					Integer key = keyIterator.next();
 					int index = selectedFeatures.indexOf(key);
 					if (-1 != index) {
 						inputs.set(index, hits.get(key).doubleValue());

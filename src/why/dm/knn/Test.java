@@ -1,3 +1,6 @@
+/**
+ * Copyright (C) 2012 why
+ */
 package why.dm.knn;
 
 import java.util.ArrayList;
@@ -9,6 +12,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * 
+ * @author qinhuiwang
+ * @version $Rev$ $Date$
+ */
 public class Test {
 	public static void main(String[] args) {
 		/*

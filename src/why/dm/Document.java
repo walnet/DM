@@ -9,7 +9,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Set;
 
-import why.dm.knn.DocDI;
+import com.sun.org.apache.bcel.internal.generic.NEW;
+
+import why.dm.util.DocumentDouble;
 
 /**
  * The Document class
@@ -20,19 +22,24 @@ import why.dm.knn.DocDI;
 public class Document {
 	// 所属分类
 	private int classify = -1;
+	// 猜测的所属分类
+	private int guessClassify = -1;
 	// 相对于每个类别的相似度
-	private ArrayList<Double> classifyValues = new ArrayList<Double>();
+	private ArrayList<Double> classifyValues = new ArrayList<>();
+
 	// Only for debug.
-	private LinkedList<Integer> hitIndices = new LinkedList<Integer>();
-	// 包括序号和计数
-	private HashMap<Integer, Integer> hits = new HashMap<Integer, Integer>();
+	private LinkedList<Integer> hitIndices = new LinkedList<>();
+
+	// <序号, 特征项频率tf>
+	private HashMap<Integer, Integer> hits = new HashMap<>();
+	// <序号, 逆文档频率idf>
+	private HashMap<Integer, Double> idfs = new HashMap<>();
 	// 文件路径
 	private String path;
 	// the distances between this doc with the rest docs 该文档与其他文档的距离，以及其他文档的指针
-	private Set<DocDI> docDIs = null;
+	private Set<DocumentDouble> documentDistances = null;
 	// the length of doc
 	private Double length = -1.0;
-
 	// 文档与其所属类的相似度(加权相似度)
 	private Double sim = -1.0;
 
@@ -57,8 +64,15 @@ public class Document {
 	/**
 	 * @return the docDIs
 	 */
-	public Set<DocDI> getDocDIs() {
-		return docDIs;
+	public Set<DocumentDouble> getDocumentDistances() {
+		return documentDistances;
+	}
+
+	/**
+	 * @return the guessClassify
+	 */
+	public int getGuessClassify() {
+		return guessClassify;
 	}
 
 	/**
@@ -111,8 +125,16 @@ public class Document {
 	 * @param docDIs
 	 *            the docDIs to set
 	 */
-	public void setDocDIs(Set<DocDI> docDIs) {
-		this.docDIs = docDIs;
+	public void setDocumentDistances(Set<DocumentDouble> docDIs) {
+		this.documentDistances = docDIs;
+	}
+
+	/**
+	 * @param guessClassify
+	 *            the guessClassify to set
+	 */
+	public void setGuessClassify(int guessClassify) {
+		this.guessClassify = guessClassify;
 	}
 
 	/**
@@ -141,9 +163,9 @@ public class Document {
 
 	public void trace() {
 		System.out.print("Class " + classify + ">> ");
-		Iterator<Integer> iter = hitIndices.descendingIterator();
-		while (iter.hasNext()) {
-			Integer index = iter.next();
+		Iterator<Integer> iterator = hitIndices.descendingIterator();
+		while (iterator.hasNext()) {
+			Integer index = iterator.next();
 			System.out.print(index + ": " + hits.get(index) + "; ");
 		}
 		System.out.println();
@@ -158,9 +180,9 @@ public class Document {
 			lastIndex = lastIndex2;
 		System.out.print(str + "(" + classify + ") "
 				+ path.substring(lastIndex + 1) + ">> ");
-		Iterator<Integer> iter = hitIndices.descendingIterator();
-		while (iter.hasNext()) {
-			Integer index = iter.next();
+		Iterator<Integer> iterator = hitIndices.descendingIterator();
+		while (iterator.hasNext()) {
+			Integer index = iterator.next();
 			System.out.print(index + "(" + termNames.get(index) + "): "
 					+ hits.get(index) + "; ");
 		}

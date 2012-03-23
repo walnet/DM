@@ -9,6 +9,8 @@ import java.util.Iterator;
 
 import org.jfree.data.category.DefaultCategoryDataset;
 
+import why.dm.knn.CenterPointCos;
+import why.dm.knn.CenterPointProductAndUnification;
 import why.dm.knn.Knn;
 
 /**
@@ -22,6 +24,9 @@ public final class Main {
 	/**
 	 * Entry function
 	 * 
+	 * @param args
+	 */
+	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
@@ -51,7 +56,9 @@ public final class Main {
 		int totalTestPart = 10;
 		featureExtraction.setTestProportion(1. / totalTestPart);
 		NativeBayes nativeBayes = new NativeBayes();
-		//BpAnn bpAnn = new BpAnn();
+		// BpAnn bpAnn = new BpAnn();
+		CenterPointCos centerPointCos = new CenterPointCos();
+		CenterPointProductAndUnification centerPointProductAndUnification = new CenterPointProductAndUnification();
 		Knn knn = new Knn();
 		for (int testPart = 0; totalTestPart > testPart; ++testPart) {
 			String testPartString = String.valueOf(testPart);
@@ -60,14 +67,14 @@ public final class Main {
 			System.out.println("Calculating round " + testPartString + "...");
 
 			featureExtraction.selectTestDocuments(testPart);
-			//System.out.println(featureExtraction.getTestDocuments().size());
-			//System.out.println(featureExtraction.getTrainingFeature().getDocuments().size());
-			//System.out.println(featureExtraction.getTestDocuments().get(0).getPath());
-			//System.out.println();
-			//System.out.println("Select Features:");
+			// System.out.println(featureExtraction.getTestDocuments().size());
+			// System.out.println(featureExtraction.getTrainingFeature().getDocuments().size());
+			// System.out.println(featureExtraction.getTestDocuments().get(0).getPath());
+			// System.out.println();
+			// System.out.println("Select Features:");
 			featureExtraction.selectFeature();
-			//System.out.println();
-			//featureExtraction.traceTerm();
+			// System.out.println();
+			// featureExtraction.traceTerm();
 
 			// Naive Bayes classification
 			System.out.println("Naive Bayes...");
@@ -76,15 +83,35 @@ public final class Main {
 			nativeBayes.setFeatureExtraction(featureExtraction);
 			nativeBayes.train();
 			nativeBayes.test();
-	
-			// BP ANN classification
-			//System.out.println("BP ANN...");
-			//bpAnn.clear();
-			//bpAnn.setDebugFileName("bp_ann_" + testPartString);
-			//bpAnn.setFeatureExtraction(featureExtraction);
-			//bpAnn.train();
-			//bpAnn.test();
-	
+			nativeBayes.makeStackedBarChart();
+
+			// BP ANN classification System.out.println("BP ANN...");
+			// bpAnn.clear();
+			// bpAnn.setDebugFileName("bp_ann_" + testPartString);
+			// bpAnn.setFeatureExtraction(featureExtraction);
+			// bpAnn.train();
+			// bpAnn.test();
+
+			// Center point cosine classification
+			System.out.println("Center point cosine...");
+			centerPointCos.clear();
+			centerPointCos.setDebugFileName("center_point_cos_"
+					+ testPartString);
+			centerPointCos.setFeatureExtraction(featureExtraction);
+			centerPointCos.train();
+			centerPointCos.test();
+
+			// Center point product and unification classification
+			System.out.println("Center point product and unification...");
+			centerPointProductAndUnification.clear();
+			centerPointProductAndUnification
+					.setDebugFileName("center_point_product_and_unification_"
+							+ testPartString);
+			centerPointProductAndUnification
+					.setFeatureExtraction(featureExtraction);
+			centerPointProductAndUnification.train();
+			centerPointProductAndUnification.test();
+
 			// KNN classification
 			System.out.println("KNN...");
 			knn.clear();
@@ -129,11 +156,11 @@ public final class Main {
 			FeatureExtraction featureExtraction) {
 		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 		int currentDocument = 0;
-		Iterator<Document> iter = featureExtraction.getTestDocuments()
+		Iterator<Document> iterator = featureExtraction.getTestDocuments()
 				.iterator();
-		while (iter.hasNext()) {
+		while (iterator.hasNext()) {
 			++currentDocument;
-			Document document = iter.next();
+			Document document = iterator.next();
 			ArrayList<Double> values = document.getClassifyValues();
 			for (int index = 0; featureExtraction.getTrainingFeature()
 					.getClassifyHits().size() > index; ++index) {

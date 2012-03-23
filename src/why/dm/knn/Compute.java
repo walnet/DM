@@ -1,3 +1,6 @@
+/**
+ * Copyright (C) 2012 why
+ */
 package why.dm.knn;
 
 import java.util.ArrayList;
@@ -9,13 +12,14 @@ import java.util.Map;
 import java.util.Set;
 
 import why.dm.Document;
+import why.dm.util.DocumentDouble;
 
 /**
  * 
  * @author qinhuiwang 该类用于放置KNN所需的各种计算方法
  */
 public class Compute {
-	public static int NUM_KNN = 200;// knn算法中取出最近的NUM_KNN个点（即文档）
+	public static int NUM_KNN = 500;// knn算法中取出最近的NUM_KNN个点（即文档）
 
 	/**
 	 * 
@@ -64,9 +68,9 @@ public class Compute {
 	 *            文档的维度数
 	 * @return 2个文档的距离
 	 */
-	public static Double computeDistanceByMultiply(Document d1, Document d2,
+	public static Double computeDistanceByProduct(Document d1, Document d2,
 			int dimension) {
-		return computeDistanceByMultiply(d1.getHits(), d2, dimension);
+		return computeDistanceByProduct(d1.getHits(), d2, dimension);
 	}
 
 	/**
@@ -80,21 +84,28 @@ public class Compute {
 	 *            文档的维度数
 	 * @return 2个文档的距离
 	 */
-	public static Double computeDistanceByMultiply(
+	public static Double computeDistanceByProduct(
 			HashMap<Integer, Integer> hitsd1, Document d2, int dimension) {
 		Double res;
 		HashMap<Integer, Integer> hitsd2 = d2.getHits();
 
 		Integer j, k;// temporarily store the value
 		int sum = 0;
-		for (int i = 0; i < dimension; i++) {
-			j = hitsd1.get(i);
-
-			k = hitsd2.get(i);
-
-			if (k != null && j != null)
+		Iterator<Integer> iterator = hitsd1.keySet().iterator();
+		while (iterator.hasNext()) {
+			Integer key = iterator.next();
+			j = hitsd1.get(key);
+			if (null != (k = hitsd2.get(key))) {
 				sum += k * j;
+			}
 		}
+//		for (int i = 0; dimension > i; ++i) {
+//			j = hitsd1.get(i);
+//			k = hitsd2.get(i);
+//			if (null != j && null != k) {
+//				sum += j * k;
+//			}
+//		}
 		res = sum + 0.0;
 		return res;
 	}
@@ -237,14 +248,14 @@ public class Compute {
 		int docClassify = doc.getClassify();
 		int i = 0;
 
-		Set<DocDI> dis = doc.getDocDIs();
-		Iterator<DocDI> it = dis.iterator();
+		Set<DocumentDouble> dis = doc.getDocumentDistances();
+		Iterator<DocumentDouble> it = dis.iterator();
 		while (it.hasNext() && run) {
 			i++;
 			if (i >= NUM_KNN)
 				run = false;
-			DocDI di = it.next();
-			if (docClassify == di.docIndex.getClassify())
+			DocumentDouble di = it.next();
+			if (docClassify == di.document.getClassify())
 				sim += di.distance;
 		}
 		doc.setSim(sim);
@@ -303,10 +314,12 @@ public class Compute {
 	 *            一个类中的文档集
 	 * @param dimension
 	 *            维度数
+	 * @param isUnification
+	 *            是否要对中心点进行归一化，true为是
 	 * @return 计算得到的中心点
 	 */
 	public static CenterPoint computeCenterPointByAverage(
-			LinkedList<Document> docList, int dimension) {
+			LinkedList<Document> docList, int dimension, boolean isUnification) {
 		List<Double> dimenList = new ArrayList<Double>();
 
 		// 初始化维度集合
@@ -314,9 +327,9 @@ public class Compute {
 			dimenList.add(0.0);
 
 		Document doc = null;
-		Iterator<Document> iter = docList.iterator();
-		while (iter.hasNext()) {// 一个个取出文档
-			doc = iter.next();
+		Iterator<Document> iterator = docList.iterator();
+		while (iterator.hasNext()) {// 一个个取出文档
+			doc = iterator.next();
 			HashMap<Integer, Integer> docHits = doc.getHits();
 			for (int j = 0; j < dimension; j++) {
 				if (docHits.containsKey(j))
@@ -334,7 +347,8 @@ public class Compute {
 			}
 		}
 		cpLength = Math.sqrt(cpLength);
-		// cpHits=computeHitsByUnification(cpHits,cpLength);//对中心点维度进行归一化
+		if (isUnification)//
+			cpHits = computeHitsByUnification(cpHits, cpLength);// 对中心点维度进行归一化
 		int classify = -2;
 		if (doc != null)
 			classify = doc.getClassify();
@@ -426,6 +440,40 @@ public class Compute {
 		}
 		return numerator / denominator;// 除以文档长度和中心点长度的乘积
 
+	}
+	
+	/**
+	 * 通过KNN（最邻近的K个文档中，拥有最多文档的类别）方法来计算文档所属的类
+	 * @param doc 测试文档
+	 * @param NumOfClassify 类别数
+	 * @return 所属类别的序号
+	 */
+	public static int findClassifyByKnnWithProduct(Document doc,int NumOfClassify){
+		List<Integer> classifyList=new ArrayList<>();//存储每个类别出现的文档个数，索引为类别的序号，值为出现的文档个数
+		int size = classifyList.size();
+		for (int i = 0; i < NumOfClassify; i++) 
+			classifyList.add(0);//初始化为0
+		Set<DocumentDouble> documentDistances=doc.getDocumentDistances();//距离（或相似度）和文档（指针）的集合
+		Iterator<DocumentDouble> iteratorDocumentDistances = documentDistances.iterator();
+		int k = 0;//统计取出了多少个最邻近的文档
+		while (iteratorDocumentDistances.hasNext() && k <= NUM_KNN) {
+			DocumentDouble documentDistance = (DocumentDouble) iteratorDocumentDistances.next();
+			int classifyTemp = documentDistance.document.getClassify();
+			classifyList.set(classifyTemp, classifyList.get(classifyTemp)+1);//根据取出的文档类别对统计数组进行加1
+			k++;
+		}
+		
+		int max = -2;
+		int classify = -3;
+		for(int i=0;i<NumOfClassify;i++){
+			int NumOfOneClassify = classifyList.get(i);//获得每个类别统计的文档个数
+			if(NumOfOneClassify>max){
+				max=NumOfOneClassify;
+				classify = i;
+			}
+		}
+		documentDistances.clear();//清空docDI集合，它仅服务于此处的KNN查找
+		return classify;
 	}
 
 }

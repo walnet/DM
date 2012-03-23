@@ -1,5 +1,5 @@
 /**
- * 
+ * Copyright (C) 2012 why
  */
 package why.dm.test;
 
@@ -29,8 +29,10 @@ import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.RectangleInsets;
 
 /**
- * @author Hector
+ * The jfreechart test class
  * 
+ * @author hector
+ * @version $Rev$ $Date$
  */
 public final class JFCTest {
 

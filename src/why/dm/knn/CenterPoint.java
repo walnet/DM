@@ -1,3 +1,6 @@
+/**
+ * Copyright (C) 2012 why
+ */
 package why.dm.knn;
 
 import java.util.HashMap;
