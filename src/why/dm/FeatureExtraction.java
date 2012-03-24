@@ -9,8 +9,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.TreeSet;
 
 import why.dm.util.IntegerDouble;
@@ -437,7 +439,8 @@ public class FeatureExtraction {
 					/******************* 以下为统计训练集数据 ********************/
 
 					// term在每个文档中的df只计算一次
-					boolean firstDf = true;
+					//boolean firstDf = true;
+					HashSet<Integer> addedTerm = new HashSet<>();
 					// 将项加入分类索引
 					Iterator<Integer> hitIterator = currentDocument.getHits()
 							.keySet().iterator();
@@ -478,14 +481,15 @@ public class FeatureExtraction {
 								originalClassifyTotalHits + currentCount);
 						
 						// DF
-						if (firstDf) {
+						if (!addedTerm.contains(currentKey)) {
 							Integer value = dfs.get(currentKey);
 							if (null != value) {
 								dfs.put(currentKey, value + 1);
 							} else {
 								dfs.put(currentKey, 1);
 							}
-							firstDf = false;
+							addedTerm.add(currentKey);
+							//firstDf = false;
 						}
 					}
 
@@ -504,10 +508,10 @@ public class FeatureExtraction {
 			Integer df = dfs.get(key);
 			double idf = Math.log(1 + IDF_M / (double) df);
 			idfs.put(key, idf);
-			System.out.print("<" + key + ":" + idf + ">");
-			if (0 == current % 5) {
-				System.out.println();
-			}
+			//System.out.print("<" + key + ":" + idf + ">");
+			//if (0 == current % 5) {
+			//	System.out.println();
+			//}
 			++current;
 		}
 		System.out.println();
