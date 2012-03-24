@@ -272,22 +272,24 @@ public abstract class Classifier {
 			resultMatrix[DIMENSION][DIMENSION] += resultMatrix[i][DIMENSION];
 		for (int i = 0; i < DIMENSION; i++) {
 			resultMatrix[i][DIMENSION + 1] = (int) Math.round(1000.0
-					* resultMatrix[i][DIMENSION]
-					/ resultMatrix[DIMENSION][DIMENSION]);
+					* resultMatrix[i][i] / resultMatrix[i][DIMENSION]);
 			resultMatrix[DIMENSION + 1][i] = (int) Math.round(1000.0
-					* resultMatrix[DIMENSION][i]
-					/ resultMatrix[DIMENSION][DIMENSION]);
+					* resultMatrix[i][i] / resultMatrix[DIMENSION][i]);
 		}
-		resultMatrix[DIMENSION][DIMENSION + 1] = 1000;
-		resultMatrix[DIMENSION + 1][DIMENSION] = 1000;
-		resultMatrix[DIMENSION + 1][DIMENSION + 1] = 1000;
+		int totalGuessRigth = 0;
+		for (int i = 0; i < DIMENSION; i++)
+			totalGuessRigth += resultMatrix[i][i];
+		resultMatrix[DIMENSION][DIMENSION + 1] = (int) Math
+				.round(totalGuessRigth * 1000
+						/ resultMatrix[DIMENSION][DIMENSION]);
+		// resultMatrix[DIMENSION + 1][DIMENSION] = 1000;
+		// resultMatrix[DIMENSION + 1][DIMENSION + 1] = 1000;
 		
 		if (null == resultRatioMatrix) {
 			System.err.println(ERROR_RESULT_MATRIX_NOT_INIT);
 			return;
 		}
 		// TODO Insert code here
-
 	}
 
 	/**
@@ -302,7 +304,7 @@ public abstract class Classifier {
 		for (int i = 0; i < DIMENSION; i++)
 			// 打印矩阵第一行
 			System.out.print("rc" + i + "\t");
-		System.out.print("TOTAL\tRATE");
+		System.out.print("TOTAL\t正确率");
 		System.out.println();
 		for (int i = 0; i < DIMENSION + 2; i++) {
 			if (i < DIMENSION)
@@ -310,7 +312,7 @@ public abstract class Classifier {
 			else if (i == DIMENSION)
 				System.out.print("TOTAL\t");
 			else if (DIMENSION + 1 == i)
-				System.out.print("RATE\t");
+				System.out.print("召回率\t");
 
 			for (int j = 0; j < DIMENSION + 2; j++) {
 				int num = resultMatrix[i][j];
