@@ -285,7 +285,7 @@ public abstract class Classifier {
 		for (int i = 0; i < DIMENSION; i++)
 			// 打印矩阵第一行
 			System.out.print("rc" + i + "\t");
-		System.out.print("TOTAL\tRecognition");
+		System.out.print("TOTAL\t正确率");
 		System.out.println();
 		for (int i = 0; i < DIMENSION + 2; i++) {
 			if (i < DIMENSION)
@@ -293,7 +293,7 @@ public abstract class Classifier {
 			else if (i == DIMENSION)
 				System.out.print("TOTAL\t");
 			else if (DIMENSION + 1 == i)
-				System.out.print("RATE\t");
+				System.out.print("召回率\t");
 
 			for (int j = 0; j < DIMENSION + 2; j++) {
 				int num = resultMatrix[i][j];
