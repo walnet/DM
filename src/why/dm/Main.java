@@ -77,49 +77,49 @@ public final class Main {
 			// featureExtraction.traceTerm();
 
 			// Naive Bayes classification
-			/*System.out.println("Naive Bayes...");
+			System.out.println("Naive Bayes...");
 			nativeBayes.clear();
 			nativeBayes.setDebugFileName("native_bayes_" + testPartString);
 			nativeBayes.setFeatureExtraction(featureExtraction);
 			nativeBayes.train();
 			nativeBayes.test();
-			nativeBayes.makeStackedBarChart();*/
+			nativeBayes.makeStackedBarChart();
 
 			// BP ANN classification System.out.println("BP ANN...");
-			// bpAnn.clear();
-			// bpAnn.setDebugFileName("bp_ann_" + testPartString);
-			// bpAnn.setFeatureExtraction(featureExtraction);
-			// bpAnn.train();
-			// bpAnn.test();
+//			bpAnn.clear();
+//			bpAnn.setDebugFileName("bp_ann_" + testPartString);
+//			bpAnn.setFeatureExtraction(featureExtraction);
+//			bpAnn.train();
+//			bpAnn.test();
 
 			//System.out.println("All of the doc size"+featureExtraction.getTerms().size()+"; all of train doc size:"+featureExtraction.getTrainingFeature().getHits().size());
 			// Center point cosine classification
-			/*System.out.println("Center point cosine...");
-			centerPointCos.clear();
-			centerPointCos.setDebugFileName("center_point_cos_"
-					+ testPartString);
-			centerPointCos.setFeatureExtraction(featureExtraction);
-			centerPointCos.train();
-			centerPointCos.test();*/
+//			System.out.println("Center point cosine...");
+//			centerPointCos.clear();
+//			centerPointCos.setDebugFileName("center_point_cos_"
+//					+ testPartString);
+//			centerPointCos.setFeatureExtraction(featureExtraction);
+//			centerPointCos.train();
+//			centerPointCos.test();
 
 			// Center point product and unification classification
-			/*System.out.println("Center point product and unification...");
-			centerPointProductAndUnification.clear();
-			centerPointProductAndUnification
-					.setDebugFileName("center_point_product_and_unification_"
-							+ testPartString);
-			centerPointProductAndUnification
-					.setFeatureExtraction(featureExtraction);
-			centerPointProductAndUnification.train();
-			centerPointProductAndUnification.test();*/
+//			System.out.println("Center point product and unification...");
+//			centerPointProductAndUnification.clear();
+//			centerPointProductAndUnification
+//					.setDebugFileName("center_point_product_and_unification_"
+//							+ testPartString);
+//			centerPointProductAndUnification
+//					.setFeatureExtraction(featureExtraction);
+//			centerPointProductAndUnification.train();
+//			centerPointProductAndUnification.test();
 
 			// KNN classification
-			System.out.println("KNN...");
-			knn.clear();
-			knn.setDebugFileName("knn_" + testPartString);
-			knn.setFeatureExtraction(featureExtraction);
-			knn.train();
-			knn.test();
+//			System.out.println("KNN...");
+//			knn.clear();
+//			knn.setDebugFileName("knn_" + testPartString);
+//			knn.setFeatureExtraction(featureExtraction);
+//			knn.train();
+//			knn.test();
 
 		}
 

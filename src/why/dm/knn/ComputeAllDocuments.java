@@ -239,7 +239,7 @@ public class ComputeAllDocuments {
 	 *            中心点集合
 	 * @return 预测出的类别序号
 	 */
-	public static int findClassifyByCenterPointsWithCOS(Document d,
+	public static int findClassifyByCenterPointsWithCos(Document d,
 			LinkedList<CenterPoint> cps) {
 		HashMap<Integer, Integer> docHits = d.getHits();
 		Double docLength = d.getLength();
@@ -248,7 +248,7 @@ public class ComputeAllDocuments {
 		Iterator<CenterPoint> iterator = cps.iterator();
 		while (iterator.hasNext()) {
 			CenterPoint cp = iterator.next();
-			Double tmpDouble = Compute.computeSimWithCenterPointByCOS(docHits,
+			Double tmpDouble = Compute.computeSimWithCenterPointByCos(docHits,
 					docLength, cp);
 			if (tmpDouble > max) {
 				max = tmpDouble;

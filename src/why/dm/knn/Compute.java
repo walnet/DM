@@ -443,7 +443,7 @@ public class Compute {
 	 *            中心点
 	 * @return 余弦值
 	 */
-	public static Double computeSimWithCenterPointByCOS(
+	public static Double computeSimWithCenterPointByCos(
 			HashMap<Integer, Integer> docHits, Double docLength, CenterPoint cp) {
 		Double numerator = computeProductWithCenterPoint(docHits, cp);// 分子
 		Double denominator = docLength * cp.getLength();// 分母

@@ -45,9 +45,11 @@ public abstract class Classifier {
 	// resultMatrix[DIMENSION+1][0],表示实际类别为类0的文档数占所有文档数的比例，省略了%
 	private int DIMENSION = 20;
 	private int[][] resultMatrix = null;
-
+	private double[][] resultRatioMatrix = null;
+	
 	protected static final String OUTPUT_CHART_PATH = "output/chart/";
 	protected static final String OUTPUT_DATA_PATH = "output/data/";
+	private static final String ERROR_RESULT_MATRIX_NOT_INIT = "ERROR: You have to init resultMaxtix!";
 
 	public abstract void clear();
 
@@ -61,7 +63,7 @@ public abstract class Classifier {
 	 */
 	public void accumulateResultMatrix(int forecastClassify, int realClassify) {
 		if (resultMatrix == null) {
-			System.err.println("ERROR: resultMaxtix doesn't init!");
+			System.err.println(ERROR_RESULT_MATRIX_NOT_INIT);
 			return;
 		}
 		resultMatrix[forecastClassify][realClassify] += 1;
@@ -102,7 +104,7 @@ public abstract class Classifier {
 		chart.setBackgroundPaint(Color.WHITE);
 
 		// 2 ．2 主标题对象 主标题对象是 TextTitle 类型
-		chart.setTitle(new TextTitle(chartTitle, new Font("隶书", Font.BOLD, 25)));
+		chart.setTitle(new TextTitle(chartTitle, new Font("黑体", Font.BOLD, 25)));
 		// 2 ．2.1:设置中文
 		// x,y轴坐标字体
 		Font labelFont = new Font("SansSerif", Font.TRUETYPE_FONT, 12);
@@ -180,7 +182,7 @@ public abstract class Classifier {
 			createPathIfNotExist(OUTPUT_CHART_PATH);
 			String chartName = OUTPUT_CHART_PATH + charName;
 			fos_jpg = new FileOutputStream(chartName);
-			ChartUtilities.writeChartAsPNG(fos_jpg, chart, 500, 500, true, 10);
+			ChartUtilities.writeChartAsPNG(fos_jpg, chart, 1000, 600, true, 10);
 			return chartName;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -225,6 +227,13 @@ public abstract class Classifier {
 			for (int j = 0; j < DIMENSION + 2; j++)
 				resultMatrix[i][j] = 0;
 		}
+		
+		resultRatioMatrix = new double[DIMENSION][];
+		for (int i = 0; i < DIMENSION; ++i) {
+			resultRatioMatrix[i] = new double[DIMENSION];
+			for (int j = 0; j < DIMENSION; ++j)
+				resultRatioMatrix[i][j] = 0.;
+		}
 	}
 
 	/**
@@ -238,12 +247,16 @@ public abstract class Classifier {
 	 * 生成堆栈柱状图
 	 */
 	public void makeStackedBarChart() {
-		double[][] data = new double[][] { { 0.21, 0.66, 0.23, 0.40, 0.26 },
-				{ 0.25, 0.21, 0.10, 0.40, 0.16 } };
-		String[] rowKeys = { "苹果", "梨子" };
-		String[] columnKeys = { "北京", "上海", "广州", "成都", "深圳" };
-		CategoryDataset dataset = getBarData(data, rowKeys, columnKeys);
-		createStackedBarChart(dataset, "x坐标", "y坐标", "柱状图", "stackedBar.png");
+		//double[][] data = new double[][] { { 0.21, 0.66, 0.23, 0.40, 0.26, 0.66, 0.23, 0.40, 0.26, 0.26, 0.66, 0.23, 0.40, 0.26, 0.26, 0.66, 0.23, 0.40, 0.26, 0.26 },
+				//{ 0.25, 0.21, 0.10, 0.40, 0.16, 0.66, 0.23, 0.40, 0.26, 0.26, 0.66, 0.23, 0.40, 0.26, 0.26, 0.66, 0.23, 0.40, 0.26, 0.26 } };
+		String[] rowKeys = { "0", "1", "2", "3", "4", "5", "6", "7",
+				"8", "9", "10", "11", "12", "13", "14", "15", "16",
+				"17", "18", "19" };
+		String[] columnKeys = { "0", "1", "2", "3", "4", "5", "6", "7",
+				"8", "9", "10", "11", "12", "13", "14", "15", "16",
+				"17", "18", "19" };
+		CategoryDataset dataset = getBarData(resultRatioMatrix, rowKeys, columnKeys);
+		createStackedBarChart(dataset, "分类", "百分比", "统计", "stackedBar.png");
 	}
 
 	/**
@@ -251,7 +264,7 @@ public abstract class Classifier {
 	 */
 	public void calculateResultMatrix() {
 		if (resultMatrix == null) {
-			System.err.println("ERROR: resultMaxtix doesn't init!");
+			System.err.println(ERROR_RESULT_MATRIX_NOT_INIT);
 			return;
 		}
 		for (int i = 0; i < DIMENSION; i++)
@@ -271,6 +284,12 @@ public abstract class Classifier {
 						/ resultMatrix[DIMENSION][DIMENSION]);
 		// resultMatrix[DIMENSION + 1][DIMENSION] = 1000;
 		// resultMatrix[DIMENSION + 1][DIMENSION + 1] = 1000;
+		
+		if (null == resultRatioMatrix) {
+			System.err.println(ERROR_RESULT_MATRIX_NOT_INIT);
+			return;
+		}
+		// TODO Insert code here
 	}
 
 	/**
@@ -278,7 +297,7 @@ public abstract class Classifier {
 	 */
 	public void outputResultMaxtrix() {
 		if (resultMatrix == null) {
-			System.err.println("ERROR: resultMaxtix doesn't init!");
+			System.err.println(ERROR_RESULT_MATRIX_NOT_INIT);
 			return;
 		}
 		System.out.print("\t");

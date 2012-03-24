@@ -44,7 +44,7 @@ public class CenterPointCos extends Classifier {
 		while (iterator.hasNext()) {
 			Document doc = iterator.next();
 			int forecastClassify = ComputeAllDocuments
-					.findClassifyByCenterPointsWithCOS(doc, centerPoints);
+					.findClassifyByCenterPointsWithCos(doc, centerPoints);
 			// .findClassifyByCenterPoints(doc, cps, dimension);// 预测的所属类
 			if (0 == current % 40)
 				System.out.print(current + " ");// System.out.print(doc.getPath()+"-----准确类别="+doc.getClassify()+";  预测的类别="+forecastClassify);
