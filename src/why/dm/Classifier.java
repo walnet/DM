@@ -65,8 +65,8 @@ public abstract class Classifier {
 			return;
 		}
 		resultMatrix[forecastClassify][realClassify] += 1;
-		resultMatrix[forecastClassify][DIMENSION] += 1;	// 统计预测结果为类forecastClassify的文档总数
-		resultMatrix[DIMENSION][realClassify] += 1;	// 统计真实类别为类realClassify的文档总数
+		resultMatrix[forecastClassify][DIMENSION] += 1; // 统计预测结果为类forecastClassify的文档总数
+		resultMatrix[DIMENSION][realClassify] += 1; // 统计真实类别为类realClassify的文档总数
 	}
 
 	/**
@@ -87,14 +87,14 @@ public abstract class Classifier {
 		// 1:得到 CategoryDataset
 
 		// 2:JFreeChart对象
-		JFreeChart chart = ChartFactory.createStackedBarChart(chartTitle,	// 图表标题
-				xName,	// 目录轴的显示标签
-				yName,	// 数值轴的显示标签
-				dataset,	// 数据集
-				PlotOrientation.VERTICAL,	// 图表方向：水平、垂直
-				true,	// 是否显示图例(对于简单的柱状图必须是false)
-				false,	// 是否生成工具
-				false	// 是否生成URL链接
+		JFreeChart chart = ChartFactory.createStackedBarChart(chartTitle, // 图表标题
+				xName, // 目录轴的显示标签
+				yName, // 数值轴的显示标签
+				dataset, // 数据集
+				PlotOrientation.VERTICAL, // 图表方向：水平、垂直
+				true, // 是否显示图例(对于简单的柱状图必须是false)
+				false, // 是否生成工具
+				false // 是否生成URL链接
 				);
 		// 图例字体清晰
 		chart.setTextAntiAlias(false);
@@ -123,14 +123,14 @@ public abstract class Classifier {
 		// vn.setAutoRangeIncludesZero(true);
 		// 数据显示格式是百分比
 		DecimalFormat df = new DecimalFormat("0.00%");
-		vn.setNumberFormatOverride(df);	// 数据轴数据标签的显示格式
+		vn.setNumberFormatOverride(df); // 数据轴数据标签的显示格式
 		// DomainAxis （区域轴，相当于 x 轴）， RangeAxis （范围轴，相当于 y 轴）
 
 		CategoryAxis domainAxis = plot.getDomainAxis();
 
-		domainAxis.setLabelFont(labelFont);	// 轴标题
+		domainAxis.setLabelFont(labelFont); // 轴标题
 
-		domainAxis.setTickLabelFont(labelFont);	// 轴数值
+		domainAxis.setTickLabelFont(labelFont); // 轴数值
 
 		// x轴坐标太长，建议设置倾斜，如下两种方式选其一，两种效果相同
 		// 倾斜（1）横轴上的 Lable 45度倾斜
@@ -139,7 +139,7 @@ public abstract class Classifier {
 		// domainAxis.setCategoryLabelPositions(CategoryLabelPositions
 		// .createUpRotationLabelPositions(Math.PI / 3.0));
 
-		domainAxis.setMaximumCategoryLabelWidthRatio(0.6f);	// 横轴上的 Lable 是否完整显示
+		domainAxis.setMaximumCategoryLabelWidthRatio(0.6f); // 横轴上的 Lable 是否完整显示
 
 		plot.setDomainAxis(domainAxis);
 
@@ -245,7 +245,7 @@ public abstract class Classifier {
 		CategoryDataset dataset = getBarData(data, rowKeys, columnKeys);
 		createStackedBarChart(dataset, "x坐标", "y坐标", "柱状图", "stackedBar.png");
 	}
-	
+
 	/**
 	 * 计算比例
 	 */
@@ -259,15 +259,18 @@ public abstract class Classifier {
 			resultMatrix[DIMENSION][DIMENSION] += resultMatrix[i][DIMENSION];
 		for (int i = 0; i < DIMENSION; i++) {
 			resultMatrix[i][DIMENSION + 1] = (int) Math.round(1000.0
-					* resultMatrix[i][DIMENSION]
-					/ resultMatrix[DIMENSION][DIMENSION]);
+					* resultMatrix[i][i] / resultMatrix[i][DIMENSION]);
 			resultMatrix[DIMENSION + 1][i] = (int) Math.round(1000.0
-					* resultMatrix[DIMENSION][i]
-					/ resultMatrix[DIMENSION][DIMENSION]);
+					* resultMatrix[i][i] / resultMatrix[DIMENSION][i]);
 		}
-		resultMatrix[DIMENSION][DIMENSION + 1] = 1000;
-		resultMatrix[DIMENSION + 1][DIMENSION] = 1000;
-		resultMatrix[DIMENSION + 1][DIMENSION + 1] = 1000;
+		int totalGuessRigth = 0;
+		for (int i = 0; i < DIMENSION; i++)
+			totalGuessRigth += resultMatrix[i][i];
+		resultMatrix[DIMENSION][DIMENSION + 1] = (int) Math
+				.round(totalGuessRigth * 1000
+						/ resultMatrix[DIMENSION][DIMENSION]);
+		// resultMatrix[DIMENSION + 1][DIMENSION] = 1000;
+		// resultMatrix[DIMENSION + 1][DIMENSION + 1] = 1000;
 	}
 
 	/**
@@ -282,7 +285,7 @@ public abstract class Classifier {
 		for (int i = 0; i < DIMENSION; i++)
 			// 打印矩阵第一行
 			System.out.print("rc" + i + "\t");
-		System.out.print("TOTAL\tRATE");
+		System.out.print("TOTAL\tRecognition");
 		System.out.println();
 		for (int i = 0; i < DIMENSION + 2; i++) {
 			if (i < DIMENSION)

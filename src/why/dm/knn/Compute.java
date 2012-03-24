@@ -313,19 +313,19 @@ public class Compute {
 		// for (int i = 0; i < dimension; i++)
 		// dimenList.add(0.0);
 
-		// tongji zonghe
+		// 以下  统计总和
 		Document doc = null;
 		Iterator<Document> iterator = docList.iterator();
 		while (iterator.hasNext()) {// 一个个取出文档
 			doc = iterator.next();
 			HashMap<Integer, Integer> docHits = doc.getHits();
 			Iterator<Integer> keyiIterator = docHits.keySet().iterator();
-			while (keyiIterator.hasNext()) {// bian li suoyou weidu
+			while (keyiIterator.hasNext()) {// 遍历当前文档的所有维度
 				Integer key = (Integer) keyiIterator.next();
 				// dimenList.set(key, dimenList.get(key) + docHits.get(key));
 				if (cpHits.containsKey(key))
-					cpHits.put(key, cpHits.get(key) + docHits.get(key));// weidu
-																		// he
+					cpHits.put(key, cpHits.get(key) + docHits.get(key));// 维度
+																		// 和
 				else
 					cpHits.put(key, docHits.get(key) + 0.0);
 			}
@@ -334,7 +334,7 @@ public class Compute {
 		// HashMap<Integer, Double> cpHits = new HashMap<Integer, Double>();
 		int numOfDocs = docList.size();
 		Iterator<Integer> cpKeyiIterator = cpHits.keySet().iterator();
-		while (cpKeyiIterator.hasNext()) {// qu pingjun
+		while (cpKeyiIterator.hasNext()) {// 取平均值
 			Integer cpkey = (Integer) cpKeyiIterator.next();
 			Double tmp = cpHits.get(cpkey) / numOfDocs;
 			cpHits.put(cpkey, tmp);
