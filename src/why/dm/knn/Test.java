@@ -131,11 +131,12 @@ public class Test {
 		for (int i2 = 0; i2 < str.length(); i2++)
 			System.out.println(strs[i2]);
 		splitDemo("http://www.google.com.hk");
-		HashMap<Integer, Double> cpHits = new HashMap<Integer, Double>();
-//		cpHits.put(2, 3.0);
-//		cpHits.put(3, 3.0);
-//		cpHits.put(2, cpHits.get(2)/9);
-		System.out.println(Double.MAX_VALUE>10000000);
+		/*HashMap<Integer, Double> cpHits = new HashMap<Integer, Double>();
+		cpHits.put(2, 3.0);
+		cpHits.put(3, 3.0);
+		cpHits.put(2, cpHits.get(2)+9);
+		System.out.println(cpHits.get(2));*/
+		
 	}
 
 	/**

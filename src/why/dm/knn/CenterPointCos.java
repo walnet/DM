@@ -40,13 +40,11 @@ public class CenterPointCos extends Classifier {
 		int forecastRight = 0;
 		int current = 0;
 		Iterator<Document> iterator = testDocs.iterator();
-		initResultMatrix();//初始化结果矩阵
+		initResultMatrix();// 初始化结果矩阵
 		while (iterator.hasNext()) {
 			Document doc = iterator.next();
 			int forecastClassify = ComputeAllDocuments
-					.findClassifyByCenterPointsWithCOS(doc, centerPoints,
-							featureExtraction.getTrainingFeature().getHits()
-									.size());
+					.findClassifyByCenterPointsWithCOS(doc, centerPoints);
 			// .findClassifyByCenterPoints(doc, cps, dimension);// 预测的所属类
 			if (0 == current % 40)
 				System.out.print(current + " ");// System.out.print(doc.getPath()+"-----准确类别="+doc.getClassify()+";  预测的类别="+forecastClassify);
@@ -55,17 +53,17 @@ public class CenterPointCos extends Classifier {
 			if (-2 == forecastClassify)// 出错
 				System.err.println("ERROR: " + doc.getPath());
 			int realClassify = doc.getClassify();
-			accumulateResultMatrix(forecastClassify, realClassify);//计算结果矩阵个元素值，用于矩阵输出
+			accumulateResultMatrix(forecastClassify, realClassify);// 计算结果矩阵个元素值，用于矩阵输出
 			if (realClassify == forecastClassify)
 				++forecastRight;
 			++current;
 		}
 		System.out.println();
 		int size = testDocs.size();
-		System.out.println("\n"+forecastRight + " correct of total " + size + "("
-				+ (forecastRight / (size + 0.0)) + ")");
+		System.out.println("\n" + forecastRight + " correct of total " + size
+				+ "(" + (forecastRight / (size + 0.0)) + ")");
 		calculateResultMatrix(); // 计算比例
-		outputResultMaxtrix();//输出结果矩阵
+		outputResultMaxtrix();// 输出结果矩阵
 		redirectToOldOutput();
 	}
 
@@ -86,8 +84,7 @@ public class CenterPointCos extends Classifier {
 		redirectToNewOutput("train_" + debugFileName + ".txt");
 		Feature trainingFeature = featureExtraction.getTrainingFeature();
 		ComputeAllDocuments.computeAllCenterPointsByAverage(centerPoints,
-				trainingFeature.getClassifyDocuments(), trainingFeature
-						.getHits().size(), false);// 中心点集合
+				trainingFeature.getClassifyDocuments(), false);// 中心点集合
 		System.out.println("CenterPoints size: " + centerPoints.size());
 		redirectToOldOutput();
 	}

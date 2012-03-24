@@ -68,24 +68,21 @@ public class Compute {
 	 *            文档的维度数
 	 * @return 2个文档的距离
 	 */
-	public static Double computeDistanceByProduct(Document d1, Document d2,
-			int dimension) {
-		return computeDistanceByProduct(d1.getHits(), d2, dimension);
+	public static Double computeDistanceByProduct(Document d1, Document d2) {
+		return computeDistanceByProduct(d1.getHits(), d2);
 	}
 
 	/**
 	 * 相乘方式计算2个文档距离
 	 * 
-	 * @param d1
-	 *            文档1
+	 * @param hitsd1
+	 *            文档1 weiduji
 	 * @param d2
 	 *            文档2
-	 * @param dimension
-	 *            文档的维度数
 	 * @return 2个文档的距离
 	 */
 	public static Double computeDistanceByProduct(
-			HashMap<Integer, Integer> hitsd1, Document d2, int dimension) {
+			HashMap<Integer, Integer> hitsd1, Document d2) {
 		Double res;
 		HashMap<Integer, Integer> hitsd2 = d2.getHits();
 
@@ -99,13 +96,6 @@ public class Compute {
 				sum += k * j;
 			}
 		}
-//		for (int i = 0; dimension > i; ++i) {
-//			j = hitsd1.get(i);
-//			k = hitsd2.get(i);
-//			if (null != j && null != k) {
-//				sum += j * k;
-//			}
-//		}
 		res = sum + 0.0;
 		return res;
 	}
@@ -113,27 +103,25 @@ public class Compute {
 	/**
 	 * 计算文档与中心点的乘积
 	 * 
-	 * @param hitsd1
+	 * @param docHits
 	 *            文档的维度集合
 	 * @param cp
 	 *            中心点
-	 * @param dimension
-	 *            维度数值
 	 * @return 乘积
 	 */
 	public static Double computeProductWithCenterPoint(
-			HashMap<Integer, Integer> hitsd1, CenterPoint cp, int dimension) {
+			HashMap<Integer, Integer> docHits, CenterPoint cp) {
 		HashMap<Integer, Double> hitsd2 = cp.getNewHits();
 
 		Integer j;// temporarily store the value
 		Double k;
 		Double sum = 0.0;
-		for (int i = 0; i < dimension; i++) {
-			j = hitsd1.get(i);
-
-			k = hitsd2.get(i);
-
-			if (k != null && j != null)
+		Iterator<Integer> testDocHistIterator = docHits.keySet().iterator();
+		while (testDocHistIterator.hasNext()) {
+			Integer key = (Integer) testDocHistIterator.next();
+			j = docHits.get(key);
+			k = hitsd2.get(key);
+			if (k != null)
 				sum += k * j;
 		}
 		return sum;
@@ -312,40 +300,46 @@ public class Compute {
 	 * 
 	 * @param docList
 	 *            一个类中的文档集
-	 * @param dimension
-	 *            维度数
 	 * @param isUnification
 	 *            是否要对中心点进行归一化，true为是
 	 * @return 计算得到的中心点
 	 */
 	public static CenterPoint computeCenterPointByAverage(
-			LinkedList<Document> docList, int dimension, boolean isUnification) {
-		List<Double> dimenList = new ArrayList<Double>();
+			LinkedList<Document> docList, boolean isUnification) {
 
+		// List<Double> dimenList = new ArrayList<Double>();
+		HashMap<Integer, Double> cpHits = new HashMap<Integer, Double>();
 		// 初始化维度集合
-		for (int i = 0; i < dimension; i++)
-			dimenList.add(0.0);
+		// for (int i = 0; i < dimension; i++)
+		// dimenList.add(0.0);
 
+		// tongji zonghe
 		Document doc = null;
 		Iterator<Document> iterator = docList.iterator();
 		while (iterator.hasNext()) {// 一个个取出文档
 			doc = iterator.next();
 			HashMap<Integer, Integer> docHits = doc.getHits();
 			Iterator<Integer> keyiIterator = docHits.keySet().iterator();
-			while (keyiIterator.hasNext()) {
+			while (keyiIterator.hasNext()) {// bian li suoyou weidu
 				Integer key = (Integer) keyiIterator.next();
-				dimenList.set(key, dimenList.get(key) + docHits.get(key));
+				// dimenList.set(key, dimenList.get(key) + docHits.get(key));
+				if (cpHits.containsKey(key))
+					cpHits.put(key, cpHits.get(key) + docHits.get(key));// weidu
+																		// he
+				else
+					cpHits.put(key, docHits.get(key) + 0.0);
 			}
 		}
 		Double cpLength = 0.0;// 用于存储中心点长度，以便于归一中心点时使用
-		HashMap<Integer, Double> cpHits = new HashMap<Integer, Double>();
-		for (int i = 0; i < dimension; i++) {
-			Double d = dimenList.get(i);
-			if (d != 0.0) {
-				Double tmp = d / docList.size();
-				cpHits.put(i, tmp);
-				cpLength += tmp * tmp;
-			}
+		// HashMap<Integer, Double> cpHits = new HashMap<Integer, Double>();
+		int numOfDocs = docList.size();
+		Iterator<Integer> cpKeyiIterator = cpHits.keySet().iterator();
+		while (cpKeyiIterator.hasNext()) {// qu pingjun
+			Integer cpkey = (Integer) cpKeyiIterator.next();
+			Double tmp = cpHits.get(cpkey) / numOfDocs;
+			cpHits.put(cpkey, tmp);
+			cpLength += tmp * tmp;
+
 		}
 		cpLength = Math.sqrt(cpLength);
 		if (isUnification)//
@@ -367,20 +361,19 @@ public class Compute {
 	 *            维度数
 	 * @return 相似度值
 	 */
-	public static Double computeSimWithCenterPoint(Document d, CenterPoint cp,
-			int dimension) {
+	public static Double computeSimWithCenterPoint(Document d, CenterPoint cp) {
 		HashMap<Integer, Integer> hitsd = d.getHits();
 		HashMap<Integer, Double> hitscp = cp.getNewHits();
 
 		Integer j;
 		Double k;// temporarily store the value
 		Double sum = 0.0;
-		for (int i = 0; i < dimension; i++) {
-			j = hitsd.get(i);
-
-			k = hitscp.get(i);
-
-			if (k != null && j != null)
+		Iterator<Integer> testDocHitsIterator = hitsd.keySet().iterator();
+		while (testDocHitsIterator.hasNext()) {
+			Integer key = (Integer) testDocHitsIterator.next();
+			j = hitsd.get(key);
+			k = hitscp.get(key);
+			if (k != null)
 				sum += k * j;
 		}
 		return sum;
@@ -427,14 +420,11 @@ public class Compute {
 	 *            文档长度
 	 * @param cp
 	 *            中心点
-	 * @param dimension
-	 *            维度值
 	 * @return 余弦值
 	 */
 	public static Double computeSimWithCenterPointByCOS(
-			HashMap<Integer, Integer> docHits, Double docLength,
-			CenterPoint cp, int dimension) {
-		Double numerator = computeProductWithCenterPoint(docHits, cp, dimension);// 分子
+			HashMap<Integer, Integer> docHits, Double docLength, CenterPoint cp) {
+		Double numerator = computeProductWithCenterPoint(docHits, cp);// 分子
 		Double denominator = docLength * cp.getLength();// 分母
 		if (0 >= denominator) {
 			throw new ArithmeticException();
@@ -442,38 +432,44 @@ public class Compute {
 		return numerator / denominator;// 除以文档长度和中心点长度的乘积
 
 	}
-	
+
 	/**
 	 * 通过KNN（最邻近的K个文档中，拥有最多文档的类别）方法来计算文档所属的类
-	 * @param doc 测试文档
-	 * @param NumOfClassify 类别数
+	 * 
+	 * @param doc
+	 *            测试文档
+	 * @param NumOfClassify
+	 *            类别数
 	 * @return 所属类别的序号
 	 */
-	public static int findClassifyByKnnWithProduct(Document doc,int NumOfClassify){
-		List<Integer> classifyList=new ArrayList<>();//存储每个类别出现的文档个数，索引为类别的序号，值为出现的文档个数
+	public static int findClassifyByKnnWithProduct(Document doc,
+			int NumOfClassify) {
+		List<Integer> classifyList = new ArrayList<>();// 存储每个类别出现的文档个数，索引为类别的序号，值为出现的文档个数
 		int size = classifyList.size();
-		for (int i = 0; i < NumOfClassify; i++) 
-			classifyList.add(0);//初始化为0
-		Set<DocumentDouble> documentDistances=doc.getDocumentDistances();//距离（或相似度）和文档（指针）的集合
-		Iterator<DocumentDouble> iteratorDocumentDistances = documentDistances.iterator();
-		int k = 0;//统计取出了多少个最邻近的文档
+		for (int i = 0; i < NumOfClassify; i++)
+			classifyList.add(0);// 初始化为0
+		Set<DocumentDouble> documentDistances = doc.getDocumentDistances();// 距离（或相似度）和文档（指针）的集合
+		Iterator<DocumentDouble> iteratorDocumentDistances = documentDistances
+				.iterator();
+		int k = 0;// 统计取出了多少个最邻近的文档
 		while (iteratorDocumentDistances.hasNext() && k <= NUM_KNN) {
-			DocumentDouble documentDistance = (DocumentDouble) iteratorDocumentDistances.next();
+			DocumentDouble documentDistance = (DocumentDouble) iteratorDocumentDistances
+					.next();
 			int classifyTemp = documentDistance.document.getClassify();
-			classifyList.set(classifyTemp, classifyList.get(classifyTemp)+1);//根据取出的文档类别对统计数组进行加1
+			classifyList.set(classifyTemp, classifyList.get(classifyTemp) + 1);// 根据取出的文档类别对统计数组进行加1
 			k++;
 		}
-		
+
 		int max = -2;
 		int classify = -3;
-		for(int i=0;i<NumOfClassify;i++){
-			int NumOfOneClassify = classifyList.get(i);//获得每个类别统计的文档个数
-			if(NumOfOneClassify>max){
-				max=NumOfOneClassify;
+		for (int i = 0; i < NumOfClassify; i++) {
+			int NumOfOneClassify = classifyList.get(i);// 获得每个类别统计的文档个数
+			if (NumOfOneClassify > max) {
+				max = NumOfOneClassify;
 				classify = i;
 			}
 		}
-		documentDistances.clear();//清空docDI集合，它仅服务于此处的KNN查找
+		documentDistances.clear();// 清空docDI集合，它仅服务于此处的KNN查找
 		return classify;
 	}
 

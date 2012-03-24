@@ -45,9 +45,9 @@ public class CenterPointProductAndUnification extends Classifier {
 		while (iterator.hasNext()) {
 			Document doc = iterator.next();
 			int forecastClassify = ComputeAllDocuments
-					.findClassifyByCenterPoints(doc, centerPoints,
-							featureExtraction.getTrainingFeature().getHits()
-									.size());// 预测的所属类
+					.findClassifyByCenterPoints(doc, centerPoints);// 预测的所属类
+
+			++current;
 			if (0 == current % 40)
 				System.out.print(current + " ");// System.out.print(doc.getPath()+"-----准确类别="+doc.getClassify()+";  预测的类别="+forecastClassify);
 			if (0 == current % 400)
@@ -58,7 +58,6 @@ public class CenterPointProductAndUnification extends Classifier {
 			accumulateResultMatrix(forecastClassify, realClassify);// 计算结果矩阵个元素值，用于矩阵输出
 			if (realClassify == forecastClassify)
 				++forecastRight;
-			++current;
 		}
 		System.out.println();
 		int size = testDocs.size();
@@ -86,8 +85,7 @@ public class CenterPointProductAndUnification extends Classifier {
 		redirectToNewOutput("train_" + debugFileName + ".txt");
 		Feature trainingFeature = featureExtraction.getTrainingFeature();
 		ComputeAllDocuments.computeAllCenterPointsByAverage(centerPoints,
-				trainingFeature.getClassifyDocuments(), trainingFeature
-						.getHits().size(), true);// 中心点集合
+				trainingFeature.getClassifyDocuments(), true);// 中心点集合
 		System.out.println("CenterPoints size: " + centerPoints.size());
 		redirectToOldOutput();
 	}
