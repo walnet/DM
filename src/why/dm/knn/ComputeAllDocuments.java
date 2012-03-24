@@ -116,9 +116,9 @@ public class ComputeAllDocuments {
 		int numOfTestDocs = testDocs.size();
 		// DocDIDescComparator comparator = new DocDIDescComparator();
 		Document testDocument = null;
-		Document lastTestDocument = null;
+		//Document lastTestDocument = null;
 		while (testIterator.hasNext()) {
-			lastTestDocument = testDocument;
+			//lastTestDocument = testDocument;
 			testDocument = testIterator.next();
 			// Set<DocumentDouble> docDIs = new
 			// TreeSet<DocumentDouble>(comparator);// 自定义比较规则,使其降序排列
@@ -142,8 +142,8 @@ public class ComputeAllDocuments {
 			if (guessClassify == realClassify)
 				classsifyRight++;
 
-			if (null != lastTestDocument)
-				lastTestDocument.setDocumentDistances(null);
+//			if (null != lastTestDocument)
+//				lastTestDocument.setDocumentDistances(null);
 			++currentDocument;
 		}
 		System.out.println("KNN: " + classsifyRight + " correct of total "
@@ -180,15 +180,22 @@ public class ComputeAllDocuments {
 	 *            按类分的文档集合
 	 * @param isUnification
 	 *            是否要对中心点进行归一化，true为是
+	 * @param whetherUseIdfs
+	 *            是否使用idfs,true为是
+	 * @param idfs
+	 *            idfs的集合，如果不使用它，可以传入NULL
 	 * @return 中心点集合
 	 */
 	public static void computeAllCenterPointsByAverage(
 			LinkedList<CenterPoint> centerPoints,
-			ArrayList<LinkedList<Document>> classifyDocs, boolean isUnification) {
+			ArrayList<LinkedList<Document>> classifyDocs,
+			boolean isUnification, boolean whetherUseIdfs,
+			HashMap<Integer, Double> idfs) {
+
 		CenterPoint cp;
 		for (int i = 0; i < classifyDocs.size(); i++) {
 			cp = Compute.computeCenterPointByAverage(classifyDocs.get(i),
-					isUnification);
+					isUnification, whetherUseIdfs, idfs);
 			centerPoints.add(cp);
 		}
 	}

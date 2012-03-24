@@ -22,37 +22,49 @@ public class Compute {
 	public static int NUM_KNN = 500;// knn算法中取出最近的NUM_KNN个点（即文档）
 
 	/**
+	 * 用各维度相减的差的平方和再开平方根作为文档的距离
 	 * 
 	 * @param d1
 	 *            文档1
 	 * @param d2
 	 *            文档2
-	 * @param dimension
-	 *            文档的维度数
 	 * @return 2个文档的距离
 	 */
-	public static Double computeDistance(Document d1, Document d2, int dimension) {
-		Double res = -1.0;
+	public static Double computeDistance(Document d1, Document d2) {
+		Double res;
 		HashMap<Integer, Integer> hitsd1 = d1.getHits();
 		HashMap<Integer, Integer> hitsd2 = d2.getHits();
+		HashMap<Integer, Integer> differHits = new HashMap<Integer, Integer>();// 维度差
 
-		int j, k, l;// temporarily store the value
+		int l;// temporarily store the value
 		int sum = 0;
-		for (int i = 0; i < dimension; i++) {
-			if (hitsd1.containsKey(i))
-				j = hitsd1.get(i);
-			else
-				j = 0;
-
-			if (hitsd2.containsKey(i))
-				k = hitsd2.get(i);
-			else
-				k = 0;
-			if (k != 0 || j != 0) {
-				l = j - k;
-				sum += l * l;// 平方和
-			}
+		Iterator<Integer> hitsd1iIterator = hitsd1.keySet().iterator();
+		while (hitsd1iIterator.hasNext()) {// 遍历文档1，作为被减数
+			Integer d1Key = (Integer) hitsd1iIterator.next();
+			differHits.put(d1Key, hitsd1.get(d1Key));
 		}
+		Iterator<Integer> hitsd2iIterator = hitsd2.keySet().iterator();
+		while (hitsd2iIterator.hasNext()) {// 遍历文档2，作为减数
+			Integer d2Key = (Integer) hitsd2iIterator.next();
+			if (differHits.containsKey(d2Key))
+				differHits
+						.put(d2Key, differHits.get(d2Key) - hitsd2.get(d2Key));
+			else
+				differHits.put(d2Key, hitsd2.get(d2Key));
+		}
+		Iterator<Integer> differHitsiIterator = differHits.keySet().iterator();
+		while (differHitsiIterator.hasNext()) {// 取出所有的维度
+			Integer key = (Integer) differHitsiIterator.next();
+			l = differHits.get(key);
+			sum += l * l;// 平方和
+		}
+		/*
+		 * for (int i = 0; i < dimension; i++) { if (hitsd1.containsKey(i)) j =
+		 * hitsd1.get(i); else j = 0;
+		 * 
+		 * if (hitsd2.containsKey(i)) k = hitsd2.get(i); else k = 0; if (k != 0
+		 * || j != 0) { l = j - k; sum += l * l;// 平方和 } }
+		 */
 		res = sum + 0.0;// 原来应该Math.sqrt(sum)，但为了提高计算速度，直接不开根号了
 		return res;
 	}
@@ -302,10 +314,15 @@ public class Compute {
 	 *            一个类中的文档集
 	 * @param isUnification
 	 *            是否要对中心点进行归一化，true为是
+	 * @param whetherUseIdfs
+	 *            是否使用idfs,true为是
+	 * @param idfs
+	 *            idfs的集合，如果不使用它，可以传入NULL
 	 * @return 计算得到的中心点
 	 */
 	public static CenterPoint computeCenterPointByAverage(
-			LinkedList<Document> docList, boolean isUnification) {
+			LinkedList<Document> docList, boolean isUnification,
+			boolean whetherUseIdfs, HashMap<Integer, Double> idfs) {
 
 		// List<Double> dimenList = new ArrayList<Double>();
 		HashMap<Integer, Double> cpHits = new HashMap<Integer, Double>();
@@ -313,7 +330,7 @@ public class Compute {
 		// for (int i = 0; i < dimension; i++)
 		// dimenList.add(0.0);
 
-		// 以下  统计总和
+		// 以下 统计总和
 		Document doc = null;
 		Iterator<Document> iterator = docList.iterator();
 		while (iterator.hasNext()) {// 一个个取出文档
@@ -337,6 +354,10 @@ public class Compute {
 		while (cpKeyiIterator.hasNext()) {// 取平均值
 			Integer cpkey = (Integer) cpKeyiIterator.next();
 			Double tmp = cpHits.get(cpkey) / numOfDocs;
+			if (whetherUseIdfs) {// 如果使用idfs，则执行下一句
+				System.out.println(cpkey + "---size of idfs: " + idfs.size());
+				tmp = tmp * idfs.get(cpkey);// 乘以相应的权重idfs
+			}
 			cpHits.put(cpkey, tmp);
 			cpLength += tmp * tmp;
 
@@ -469,7 +490,7 @@ public class Compute {
 				classify = i;
 			}
 		}
-		documentDistances.clear();// 清空docDI集合，它仅服务于此处的KNN查找
+		doc.setDocumentDistances(null);// 清空docDI集合，它仅服务于此处的KNN查找
 		return classify;
 	}
 

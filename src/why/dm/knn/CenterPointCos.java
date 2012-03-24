@@ -84,7 +84,7 @@ public class CenterPointCos extends Classifier {
 		redirectToNewOutput("train_" + debugFileName + ".txt");
 		Feature trainingFeature = featureExtraction.getTrainingFeature();
 		ComputeAllDocuments.computeAllCenterPointsByAverage(centerPoints,
-				trainingFeature.getClassifyDocuments(), false);// 中心点集合
+				trainingFeature.getClassifyDocuments(), false,false,null);// 中心点集合trainingFeature.getIdfs()
 		System.out.println("CenterPoints size: " + centerPoints.size());
 		redirectToOldOutput();
 	}
