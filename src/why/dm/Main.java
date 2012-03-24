@@ -83,7 +83,6 @@ public final class Main {
 			nativeBayes.setFeatureExtraction(featureExtraction);
 			nativeBayes.train();
 			nativeBayes.test();
-			nativeBayes.makeStackedBarChart();
 
 			// BP ANN classification System.out.println("BP ANN...");
 //			bpAnn.clear();
