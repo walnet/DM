@@ -44,9 +44,7 @@ public class CenterPointCos extends Classifier {
 		while (iterator.hasNext()) {
 			Document doc = iterator.next();
 			int forecastClassify = ComputeAllDocuments
-					.findClassifyByCenterPointsWithCOS(doc, centerPoints,
-							featureExtraction.getTrainingFeature().getHits()
-									.size());
+					.findClassifyByCenterPointsWithCos(doc, centerPoints);
 			// .findClassifyByCenterPoints(doc, cps, dimension);// 预测的所属类
 			if (0 == current % 40)
 				System.out.print(current + " ");// System.out.print(doc.getPath()+"-----准确类别="+doc.getClassify()+";  预测的类别="+forecastClassify);
@@ -86,8 +84,7 @@ public class CenterPointCos extends Classifier {
 		redirectToNewOutput("train_" + debugFileName + ".txt");
 		Feature trainingFeature = featureExtraction.getTrainingFeature();
 		ComputeAllDocuments.computeAllCenterPointsByAverage(centerPoints,
-				trainingFeature.getClassifyDocuments(), featureExtraction
-						.getTerms().size(), false);// 中心点集合
+				trainingFeature.getClassifyDocuments(), false); // 中心点集合
 		System.out.println("CenterPoints size: " + centerPoints.size());
 		redirectToOldOutput();
 	}

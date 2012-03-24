@@ -37,7 +37,6 @@ public class ComputeAllDocuments {
 		Feature trainingFeature = fe.getTrainingFeature();
 		ArrayList<LinkedList<Document>> classifyDocs = trainingFeature
 				.getClassifyDocuments();
-		int dimension = trainingFeature.getHits().size();// 训练集总维度数
 
 		for (int i = 0; i < classifyDocs.size(); i++) {// 遍历每个类
 			LinkedList<Document> ll = classifyDocs.get(i);
@@ -63,7 +62,8 @@ public class ComputeAllDocuments {
 				// 与序号在当前序号之前的文档的距离其实在前面已经计算过，
 				// 所以distances[k][i]=distances[i][k]
 				for (int i = 0; i < k; i++) {
-					DocumentDouble di2 = new DocumentDouble(docList.get(i), distances[i][k]);
+					DocumentDouble di2 = new DocumentDouble(docList.get(i),
+							distances[i][k]);
 					documentDistances.add(di2);
 				}
 			}
@@ -73,8 +73,7 @@ public class ComputeAllDocuments {
 
 			for (int m = k + 1; m < docList.size(); m++) {
 				Document tempDoc = docList.get(m);
-				Double len = Compute.computeDistanceByProduct(doc, tempDoc,
-						dimension);// 计算2文档间的距离
+				Double len = Compute.computeDistanceByProduct(doc, tempDoc);// 计算2文档间的距离
 				distances[k][m] = len;// 赋值
 				DocumentDouble di = new DocumentDouble(tempDoc, len);
 				documentDistances.add(di);
@@ -91,14 +90,14 @@ public class ComputeAllDocuments {
 	 * @param fe
 	 *            FeatureExtraction对象
 	 */
-	public static void ComputeDistanceFromTestDocsToTrainDocs(Classifier classifier) {
+	public static void ComputeDistanceFromTestDocsToTrainDocs(
+			Classifier classifier) {
 		FeatureExtraction featureExtraction = classifier.getFeatureExtraction();
 		List<Document> docList = new LinkedList<Document>();// 所有文档
 
 		Feature trainingFeature = featureExtraction.getTrainingFeature();
 		ArrayList<LinkedList<Document>> classifyDocs = trainingFeature
 				.getClassifyDocuments();
-		int dimension = trainingFeature.getHits().size();// 训练集总维度数
 
 		for (int i = 0; i < classifyDocs.size(); i++) {// 遍历每个类
 			Iterator<Document> iterator = classifyDocs.get(i).iterator();
@@ -115,40 +114,34 @@ public class ComputeAllDocuments {
 		Iterator<Document> trainIterator;
 		int classsifyRight = 0;
 		int numOfTestDocs = testDocs.size();
-		//DocDIDescComparator comparator = new DocDIDescComparator();
+		// DocDIDescComparator comparator = new DocDIDescComparator();
 		Document testDocument = null;
 		Document lastTestDocument = null;
 		while (testIterator.hasNext()) {
 			lastTestDocument = testDocument;
 			testDocument = testIterator.next();
-			//Set<DocumentDouble> docDIs = new TreeSet<DocumentDouble>(comparator);// 自定义比较规则,使其降序排列
+			// Set<DocumentDouble> docDIs = new
+			// TreeSet<DocumentDouble>(comparator);// 自定义比较规则,使其降序排列
 			Set<DocumentDouble> documentDistances = new TreeSet<DocumentDouble>();// 自定义比较规则,使其降序排列
 			trainIterator = docList.iterator();// 训练集合iterator
 			while (trainIterator.hasNext()) {
 				Document trainDoc = (Document) trainIterator.next();
-				DocumentDouble di = new DocumentDouble(trainDoc,
-						Compute.computeDistanceByProduct(testDocument, trainDoc,
-								dimension));
-				//if (0 > comparator.compare(di, docDIs.iterator().next()))
-					//docDIs.add(di);
-				//if (Compute.NUM_KNN > docDIs.size())
+				DocumentDouble di = new DocumentDouble(
+						trainDoc,
+						Compute.computeDistanceByProduct(testDocument, trainDoc));
 				documentDistances.add(di);
 			}
-//			if (0 == currentDocument % 10) {
-//				System.out.print(currentDocument + " ");
-//				if (0 == currentDocument % 200) {
-//					System.out.println();
-//				}
-//			}
+
 			testDocument.setDocumentDistances(documentDistances);
-			
+
 			int guessClassify = Compute.findClassifyByKnnWithProduct(
-					testDocument, featureExtraction.getTrainingFeature().getClassifyDocuments().size());
+					testDocument, featureExtraction.getTrainingFeature()
+							.getClassifyDocuments().size());
 			int realClassify = testDocument.getClassify();
 			classifier.accumulateResultMatrix(guessClassify, realClassify);// 计算结果矩阵个元素值，用于矩阵输出
 			if (guessClassify == realClassify)
 				classsifyRight++;
-			
+
 			if (null != lastTestDocument)
 				lastTestDocument.setDocumentDistances(null);
 			++currentDocument;
@@ -185,20 +178,17 @@ public class ComputeAllDocuments {
 	 * 
 	 * @param classifyDocs
 	 *            按类分的文档集合
-	 * @param dimension
-	 *            维度集
 	 * @param isUnification
 	 *            是否要对中心点进行归一化，true为是
 	 * @return 中心点集合
 	 */
 	public static void computeAllCenterPointsByAverage(
 			LinkedList<CenterPoint> centerPoints,
-			ArrayList<LinkedList<Document>> classifyDocs, int dimension,
-			boolean isUnification) {
+			ArrayList<LinkedList<Document>> classifyDocs, boolean isUnification) {
 		CenterPoint cp;
 		for (int i = 0; i < classifyDocs.size(); i++) {
 			cp = Compute.computeCenterPointByAverage(classifyDocs.get(i),
-					dimension, isUnification);
+					isUnification);
 			centerPoints.add(cp);
 		}
 	}
@@ -210,12 +200,10 @@ public class ComputeAllDocuments {
 	 *            文档
 	 * @param cps
 	 *            中心点集合
-	 * @param dimension
-	 *            维度数
 	 * @return 所属类的序号/索引
 	 */
 	public static int findClassifyByCenterPoints(Document d,
-			List<CenterPoint> cps, int dimension) {
+			List<CenterPoint> cps) {
 		Double max = Double.NEGATIVE_INFINITY;
 		// Double min = Double.MAX_VALUE;
 		Double s;
@@ -224,17 +212,12 @@ public class ComputeAllDocuments {
 
 		for (int i = 0; i < size; i++) {
 			CenterPoint cp = cps.get(i);
-			s = Compute.computeSimWithCenterPoint(d, cp, dimension);//
+			s = Compute.computeSimWithCenterPoint(d, cp);//
 			// 前提是要对中心点进行归一化（computeCenterPointByAverage()中），计算比较准确
 			if (s > max) {
 				max = s;
 				classify = cp.getClassify();
 			}
-			/*
-			 * s=Compute.(d, cp, dimension);
-			 * //前提是不能对中心点进行归一化（computeCenterPointByAverage()中），否则计算不准确
-			 * if(s<min){ min=s; classify = cp.getClassify(); }
-			 */
 		}
 		return classify;
 
@@ -247,12 +230,10 @@ public class ComputeAllDocuments {
 	 *            文档
 	 * @param cps
 	 *            中心点集合
-	 * @param dimension
-	 *            维度值
 	 * @return 预测出的类别序号
 	 */
-	public static int findClassifyByCenterPointsWithCOS(Document d,
-			LinkedList<CenterPoint> cps, int dimension) {
+	public static int findClassifyByCenterPointsWithCos(Document d,
+			LinkedList<CenterPoint> cps) {
 		HashMap<Integer, Integer> docHits = d.getHits();
 		Double docLength = d.getLength();
 		Double max = Double.NEGATIVE_INFINITY;// 负无限小
@@ -260,8 +241,8 @@ public class ComputeAllDocuments {
 		Iterator<CenterPoint> iterator = cps.iterator();
 		while (iterator.hasNext()) {
 			CenterPoint cp = iterator.next();
-			Double tmpDouble = Compute.computeSimWithCenterPointByCOS(docHits,
-					docLength, cp, dimension);
+			Double tmpDouble = Compute.computeSimWithCenterPointByCos(docHits,
+					docLength, cp);
 			if (tmpDouble > max) {
 				max = tmpDouble;
 				classify = cp.getClassify();
