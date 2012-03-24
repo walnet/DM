@@ -45,9 +45,11 @@ public abstract class Classifier {
 	// resultMatrix[DIMENSION+1][0],表示实际类别为类0的文档数占所有文档数的比例，省略了%
 	private int DIMENSION = 20;
 	private int[][] resultMatrix = null;
-
+	private double[][] resultRatioMatrix = null;
+	
 	protected static final String OUTPUT_CHART_PATH = "output/chart/";
 	protected static final String OUTPUT_DATA_PATH = "output/data/";
+	private static final String ERROR_RESULT_MATRIX_NOT_INIT = "ERROR: You have to init resultMaxtix!";
 
 	public abstract void clear();
 
@@ -61,12 +63,12 @@ public abstract class Classifier {
 	 */
 	public void accumulateResultMatrix(int forecastClassify, int realClassify) {
 		if (resultMatrix == null) {
-			System.err.println("ERROR: resultMaxtix doesn't init!");
+			System.err.println(ERROR_RESULT_MATRIX_NOT_INIT);
 			return;
 		}
 		resultMatrix[forecastClassify][realClassify] += 1;
-		resultMatrix[forecastClassify][DIMENSION] += 1;	// 统计预测结果为类forecastClassify的文档总数
-		resultMatrix[DIMENSION][realClassify] += 1;	// 统计真实类别为类realClassify的文档总数
+		resultMatrix[forecastClassify][DIMENSION] += 1; // 统计预测结果为类forecastClassify的文档总数
+		resultMatrix[DIMENSION][realClassify] += 1; // 统计真实类别为类realClassify的文档总数
 	}
 
 	/**
@@ -87,14 +89,14 @@ public abstract class Classifier {
 		// 1:得到 CategoryDataset
 
 		// 2:JFreeChart对象
-		JFreeChart chart = ChartFactory.createStackedBarChart(chartTitle,	// 图表标题
-				xName,	// 目录轴的显示标签
-				yName,	// 数值轴的显示标签
-				dataset,	// 数据集
-				PlotOrientation.VERTICAL,	// 图表方向：水平、垂直
-				true,	// 是否显示图例(对于简单的柱状图必须是false)
-				false,	// 是否生成工具
-				false	// 是否生成URL链接
+		JFreeChart chart = ChartFactory.createStackedBarChart(chartTitle, // 图表标题
+				xName, // 目录轴的显示标签
+				yName, // 数值轴的显示标签
+				dataset, // 数据集
+				PlotOrientation.VERTICAL, // 图表方向：水平、垂直
+				true, // 是否显示图例(对于简单的柱状图必须是false)
+				false, // 是否生成工具
+				false // 是否生成URL链接
 				);
 		// 图例字体清晰
 		chart.setTextAntiAlias(false);
@@ -102,7 +104,7 @@ public abstract class Classifier {
 		chart.setBackgroundPaint(Color.WHITE);
 
 		// 2 ．2 主标题对象 主标题对象是 TextTitle 类型
-		chart.setTitle(new TextTitle(chartTitle, new Font("隶书", Font.BOLD, 25)));
+		chart.setTitle(new TextTitle(chartTitle, new Font("黑体", Font.BOLD, 25)));
 		// 2 ．2.1:设置中文
 		// x,y轴坐标字体
 		Font labelFont = new Font("SansSerif", Font.TRUETYPE_FONT, 12);
@@ -123,14 +125,14 @@ public abstract class Classifier {
 		// vn.setAutoRangeIncludesZero(true);
 		// 数据显示格式是百分比
 		DecimalFormat df = new DecimalFormat("0.00%");
-		vn.setNumberFormatOverride(df);	// 数据轴数据标签的显示格式
+		vn.setNumberFormatOverride(df); // 数据轴数据标签的显示格式
 		// DomainAxis （区域轴，相当于 x 轴）， RangeAxis （范围轴，相当于 y 轴）
 
 		CategoryAxis domainAxis = plot.getDomainAxis();
 
-		domainAxis.setLabelFont(labelFont);	// 轴标题
+		domainAxis.setLabelFont(labelFont); // 轴标题
 
-		domainAxis.setTickLabelFont(labelFont);	// 轴数值
+		domainAxis.setTickLabelFont(labelFont); // 轴数值
 
 		// x轴坐标太长，建议设置倾斜，如下两种方式选其一，两种效果相同
 		// 倾斜（1）横轴上的 Lable 45度倾斜
@@ -139,7 +141,7 @@ public abstract class Classifier {
 		// domainAxis.setCategoryLabelPositions(CategoryLabelPositions
 		// .createUpRotationLabelPositions(Math.PI / 3.0));
 
-		domainAxis.setMaximumCategoryLabelWidthRatio(0.6f);	// 横轴上的 Lable 是否完整显示
+		domainAxis.setMaximumCategoryLabelWidthRatio(0.6f); // 横轴上的 Lable 是否完整显示
 
 		plot.setDomainAxis(domainAxis);
 
@@ -180,7 +182,7 @@ public abstract class Classifier {
 			createPathIfNotExist(OUTPUT_CHART_PATH);
 			String chartName = OUTPUT_CHART_PATH + charName;
 			fos_jpg = new FileOutputStream(chartName);
-			ChartUtilities.writeChartAsPNG(fos_jpg, chart, 500, 500, true, 10);
+			ChartUtilities.writeChartAsPNG(fos_jpg, chart, 1000, 600, true, 10);
 			return chartName;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -225,6 +227,13 @@ public abstract class Classifier {
 			for (int j = 0; j < DIMENSION + 2; j++)
 				resultMatrix[i][j] = 0;
 		}
+		
+		resultRatioMatrix = new double[DIMENSION][];
+		for (int i = 0; i < DIMENSION; ++i) {
+			resultRatioMatrix[i] = new double[DIMENSION];
+			for (int j = 0; j < DIMENSION; ++j)
+				resultRatioMatrix[i][j] = 0.;
+		}
 	}
 
 	/**
@@ -238,20 +247,24 @@ public abstract class Classifier {
 	 * 生成堆栈柱状图
 	 */
 	public void makeStackedBarChart() {
-		double[][] data = new double[][] { { 0.21, 0.66, 0.23, 0.40, 0.26 },
-				{ 0.25, 0.21, 0.10, 0.40, 0.16 } };
-		String[] rowKeys = { "苹果", "梨子" };
-		String[] columnKeys = { "北京", "上海", "广州", "成都", "深圳" };
-		CategoryDataset dataset = getBarData(data, rowKeys, columnKeys);
-		createStackedBarChart(dataset, "x坐标", "y坐标", "柱状图", "stackedBar.png");
+		//double[][] data = new double[][] { { 0.21, 0.66, 0.23, 0.40, 0.26, 0.66, 0.23, 0.40, 0.26, 0.26, 0.66, 0.23, 0.40, 0.26, 0.26, 0.66, 0.23, 0.40, 0.26, 0.26 },
+				//{ 0.25, 0.21, 0.10, 0.40, 0.16, 0.66, 0.23, 0.40, 0.26, 0.26, 0.66, 0.23, 0.40, 0.26, 0.26, 0.66, 0.23, 0.40, 0.26, 0.26 } };
+		String[] rowKeys = { "0", "1", "2", "3", "4", "5", "6", "7",
+				"8", "9", "10", "11", "12", "13", "14", "15", "16",
+				"17", "18", "19" };
+		String[] columnKeys = { "0", "1", "2", "3", "4", "5", "6", "7",
+				"8", "9", "10", "11", "12", "13", "14", "15", "16",
+				"17", "18", "19" };
+		CategoryDataset dataset = getBarData(resultRatioMatrix, rowKeys, columnKeys);
+		createStackedBarChart(dataset, "分类", "百分比", "统计", "stackedBar.png");
 	}
-	
+
 	/**
 	 * 计算比例
 	 */
 	public void calculateResultMatrix() {
 		if (resultMatrix == null) {
-			System.err.println("ERROR: resultMaxtix doesn't init!");
+			System.err.println(ERROR_RESULT_MATRIX_NOT_INIT);
 			return;
 		}
 		for (int i = 0; i < DIMENSION; i++)
@@ -268,6 +281,13 @@ public abstract class Classifier {
 		resultMatrix[DIMENSION][DIMENSION + 1] = 1000;
 		resultMatrix[DIMENSION + 1][DIMENSION] = 1000;
 		resultMatrix[DIMENSION + 1][DIMENSION + 1] = 1000;
+		
+		if (null == resultRatioMatrix) {
+			System.err.println(ERROR_RESULT_MATRIX_NOT_INIT);
+			return;
+		}
+		// TODO Insert code here
+
 	}
 
 	/**
@@ -275,7 +295,7 @@ public abstract class Classifier {
 	 */
 	public void outputResultMaxtrix() {
 		if (resultMatrix == null) {
-			System.err.println("ERROR: resultMaxtix doesn't init!");
+			System.err.println(ERROR_RESULT_MATRIX_NOT_INIT);
 			return;
 		}
 		System.out.print("\t");
