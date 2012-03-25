@@ -227,13 +227,6 @@ public abstract class Classifier {
 			for (int j = 0; j < DIMENSION + 2; j++)
 				resultMatrix[i][j] = 0;
 		}
-		
-		resultRatioMatrix = new double[DIMENSION][];
-		for (int i = 0; i < DIMENSION; ++i) {
-			resultRatioMatrix[i] = new double[DIMENSION];
-			for (int j = 0; j < DIMENSION; ++j)
-				resultRatioMatrix[i][j] = 0.;
-		}
 	}
 
 	/**
@@ -246,7 +239,7 @@ public abstract class Classifier {
 	/**
 	 * 生成堆栈柱状图
 	 */
-	public void makeStackedBarChart() {
+	public void outputStackedBarChart(String fileName) {
 		//double[][] data = new double[][] { { 0.21, 0.66, 0.23, 0.40, 0.26, 0.66, 0.23, 0.40, 0.26, 0.26, 0.66, 0.23, 0.40, 0.26, 0.26, 0.66, 0.23, 0.40, 0.26, 0.26 },
 				//{ 0.25, 0.21, 0.10, 0.40, 0.16, 0.66, 0.23, 0.40, 0.26, 0.26, 0.66, 0.23, 0.40, 0.26, 0.26, 0.66, 0.23, 0.40, 0.26, 0.26 } };
 		String[] rowKeys = { "0", "1", "2", "3", "4", "5", "6", "7",
@@ -256,13 +249,14 @@ public abstract class Classifier {
 				"8", "9", "10", "11", "12", "13", "14", "15", "16",
 				"17", "18", "19" };
 		CategoryDataset dataset = getBarData(resultRatioMatrix, rowKeys, columnKeys);
-		createStackedBarChart(dataset, "分类", "百分比", "统计", "stackedBar.png");
+		createStackedBarChart(dataset, "分类", "百分比", "统计", fileName + ".png");
 	}
 
 	/**
 	 * 计算比例
 	 */
 	public void calculateResultMatrix() {
+		// result matrix
 		if (resultMatrix == null) {
 			System.err.println(ERROR_RESULT_MATRIX_NOT_INIT);
 			return;
@@ -285,11 +279,14 @@ public abstract class Classifier {
 		// resultMatrix[DIMENSION + 1][DIMENSION] = 1000;
 		// resultMatrix[DIMENSION + 1][DIMENSION + 1] = 1000;
 		
-		if (null == resultRatioMatrix) {
-			System.err.println(ERROR_RESULT_MATRIX_NOT_INIT);
-			return;
+		// result ratio matrix
+		resultRatioMatrix = new double[DIMENSION][];
+		for (int i = 0; i < DIMENSION; ++i) {
+			resultRatioMatrix[i] = new double[DIMENSION];
+			for (int j = 0; j < DIMENSION; ++j) {
+				resultRatioMatrix[i][j] = (double) resultMatrix[i][j] / (double) resultMatrix[DIMENSION][j];
+			}
 		}
-		// TODO Insert code here
 	}
 
 	/**

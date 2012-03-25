@@ -500,7 +500,7 @@ public class FeatureExtraction {
 
 			}
 		}
-		System.out.println("IDF:");
+		//System.out.println("IDF:");
 		int current = 0;
 		Iterator<Integer> iterator = dfs.keySet().iterator();
 		while (iterator.hasNext()) {

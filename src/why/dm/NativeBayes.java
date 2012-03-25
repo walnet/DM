@@ -170,7 +170,7 @@ public class NativeBayes extends Classifier {
 					+ (double) debugCorrect / (double) debugTotal + ").");
 			calculateResultMatrix(); // 计算比例
 			outputResultMaxtrix(); // 输出结果矩阵
-			makeStackedBarChart(); // 输出统计图
+			outputStackedBarChart(debugFileName); // 输出统计图
 		} else {
 			System.out.println("Finished!");
 		}
