@@ -77,12 +77,12 @@ public final class Main {
 			// featureExtraction.traceTerm();
 
 			// Naive Bayes classification
-			System.out.println("Naive Bayes...");
-			nativeBayes.clear();
-			nativeBayes.setDebugFileName("native_bayes_" + testPartString);
-			nativeBayes.setFeatureExtraction(featureExtraction);
-			nativeBayes.train();
-			nativeBayes.test();
+//			System.out.println("Naive Bayes...");
+//			nativeBayes.clear();
+//			nativeBayes.setDebugFileName("native_bayes_" + testPartString);
+//			nativeBayes.setFeatureExtraction(featureExtraction);
+//			nativeBayes.train();
+//			nativeBayes.test();
 
 			// BP ANN classification System.out.println("BP ANN...");
 //			bpAnn.clear();
@@ -93,16 +93,16 @@ public final class Main {
 
 			//System.out.println("All of the doc size"+featureExtraction.getTerms().size()+"; all of train doc size:"+featureExtraction.getTrainingFeature().getHits().size());
 			// Center point cosine classification
-			/*System.out.println("Center point cosine...");
-			centerPointCos.clear();
-			centerPointCos.setDebugFileName("center_point_cos_"
-					+ testPartString);
-			centerPointCos.setFeatureExtraction(featureExtraction);
-			centerPointCos.train();
-			centerPointCos.test();*/
+//			System.out.println("Center point cosine...");
+//			centerPointCos.clear();
+//			centerPointCos.setDebugFileName("center_point_cos_"
+//					+ testPartString);
+//			centerPointCos.setFeatureExtraction(featureExtraction);
+//			centerPointCos.train();
+//			centerPointCos.test();
 
 			// Center point product and unification classification
-			/*System.out.println("Center point product and unification...");
+			System.out.println("Center point product and unification...");
 			centerPointProductAndUnification.clear();
 			centerPointProductAndUnification
 					.setDebugFileName("center_point_product_and_unification_"
@@ -110,7 +110,7 @@ public final class Main {
 			centerPointProductAndUnification
 					.setFeatureExtraction(featureExtraction);
 			centerPointProductAndUnification.train();
-			centerPointProductAndUnification.test();*/
+			centerPointProductAndUnification.test();
 
 			// KNN classification
 //			System.out.println("KNN...");
