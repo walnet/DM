@@ -129,7 +129,7 @@ public class ComputeAllDocuments {
 				Document trainDoc = (Document) trainIterator.next();
 				DocumentDouble di = new DocumentDouble(trainDoc,
 						Compute.computeDistanceByProduct(testDocument,
-								trainDoc, false, trainingFeature.getIdfs()));// 使用IDFS
+								trainDoc, true, trainingFeature.getIdfs()));// 使用IDFS
 				documentDistances.add(di);
 			}
 
@@ -152,6 +152,7 @@ public class ComputeAllDocuments {
 				+ (classsifyRight / (numOfTestDocs + 0.0)) + ")");
 		classifier.calculateResultMatrix(); // 计算比例
 		classifier.outputResultMaxtrix();// 输出结果矩阵
+		classifier.outputStackedBarChart(classifier.getDebugFileName()); // 输出统计图
 	}
 
 	/**

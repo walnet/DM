@@ -113,12 +113,12 @@ public final class Main {
 			centerPointProductAndUnification.test();
 
 			// KNN classification
-//			System.out.println("KNN...");
-//			knn.clear();
-//			knn.setDebugFileName("knn_" + testPartString);
-//			knn.setFeatureExtraction(featureExtraction);
-//			knn.train();
-//			knn.test();
+			/*System.out.println("KNN...");
+			knn.clear();
+			knn.setDebugFileName("knn_" + testPartString);
+			knn.setFeatureExtraction(featureExtraction);
+			knn.train();
+			knn.test();*/
 
 		}
 

@@ -19,7 +19,7 @@ import why.dm.util.DocumentDouble;
  * @author qinhuiwang 该类用于放置KNN所需的各种计算方法
  */
 public class Compute {
-	public static int NUM_KNN = 500;// knn算法中取出最近的NUM_KNN个点（即文档）
+	public static int NUM_KNN = 2000;// knn算法中取出最近的NUM_KNN个点（即文档）
 
 	/**
 	 * 用各维度相减的差的平方和再开平方根作为文档的距离
@@ -105,12 +105,12 @@ public class Compute {
 	public static Double computeDistanceByProduct(
 			HashMap<Integer, Integer> hitsd1, Document d2,
 			boolean whetherUseIdfs, HashMap<Integer, Double> idfs) {
-		Double res;
+
 		HashMap<Integer, Integer> hitsd2 = d2.getHits();
 
 		Integer j, k;// temporarily store the value
 		Double d;
-		int sum = 0;
+		Double sum = 0.0;
 		Iterator<Integer> iterator = hitsd1.keySet().iterator();
 		while (iterator.hasNext()) {
 			Integer key = iterator.next();
@@ -123,8 +123,9 @@ public class Compute {
 					sum += k * j;
 			}
 		}
-		res = sum + 0.0;
-		return res;
+
+		// System.out.println("  "+res);
+		return sum;
 	}
 
 	/**
@@ -395,7 +396,8 @@ public class Compute {
 			Integer cpkey = (Integer) cpKeyiIterator.next();
 			Double tmp = cpHits.get(cpkey) / numOfDocs;
 			if (whetherUseIdfs) {// 如果使用idfs，则执行下一句
-				//System.out.println(cpkey + "---size of idfs: " + idfs.size());
+				// System.out.println(cpkey + "---size of idfs: " +
+				// idfs.size());
 				tmp = tmp * idfs.get(cpkey);// 乘以相应的权重idfs
 			}
 			cpHits.put(cpkey, tmp);
