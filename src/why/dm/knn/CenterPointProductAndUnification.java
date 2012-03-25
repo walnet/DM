@@ -65,6 +65,7 @@ public class CenterPointProductAndUnification extends Classifier {
 				+ "(" + (forecastRight / (size + 0.0)) + ")");
 		calculateResultMatrix(); // 计算比例
 		outputResultMaxtrix();// 输出结果矩阵
+		outputStackedBarChart(debugFileName); // 输出统计图
 		redirectToOldOutput();
 	}
 

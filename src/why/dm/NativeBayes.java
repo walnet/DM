@@ -68,7 +68,8 @@ public class NativeBayes extends Classifier {
 		// 累乘转成log累加
 		// double pwc = 1;
 		double pwc = 0;
-		Iterator<Integer> termIterator = testDocument.getHits().keySet().iterator();
+		Iterator<Integer> termIterator = testDocument.getHits().keySet()
+				.iterator();
 		while (termIterator.hasNext()) {
 			Integer currentTerm;
 			currentTerm = termIterator.next();
@@ -117,16 +118,16 @@ public class NativeBayes extends Classifier {
 			// classifyDiffs.add(diff.value);
 			// classifyTotals.add(total.value);
 			if (debugTrace) {
-				System.out.println(classify
-						+ ">> Pc:"
-						+ Pcs.get(classify)
-						+ "; diff: "
-						+ featureExtraction.getTrainingFeature()
-								.getClassifyHits().get(classify).keySet()
-								.size()
-						+ "; total: "
-						+ featureExtraction.getTrainingFeature()
-								.getClassifyTotalHits().get(classify) + ".");
+//				System.out.println(classify
+//						+ ">> Pc:"
+//						+ Pcs.get(classify)
+//						+ "; diff: "
+//						+ featureExtraction.getTrainingFeature()
+//								.getClassifyHits().get(classify).keySet()
+//								.size()
+//						+ "; total: "
+//						+ featureExtraction.getTrainingFeature()
+//								.getClassifyTotalHits().get(classify) + ".");
 			}
 		}
 		if (debugTrace) {
@@ -149,13 +150,13 @@ public class NativeBayes extends Classifier {
 				}
 			}
 			if (debugTrace) {
-				int lastIndex = testDocument.getPath().lastIndexOf('\\');
-				int lastIndex2 = testDocument.getPath().lastIndexOf('/');
-				if (lastIndex2 > lastIndex)
-					lastIndex = lastIndex2;
-				System.out.println("(" + testDocument.getClassify() + ") "
-						+ testDocument.getPath().substring(lastIndex + 1)
-						+ ">> " + maxClassify);
+//				int lastIndex = testDocument.getPath().lastIndexOf('\\');
+//				int lastIndex2 = testDocument.getPath().lastIndexOf('/');
+//				if (lastIndex2 > lastIndex)
+//					lastIndex = lastIndex2;
+//				System.out.println("(" + testDocument.getClassify() + ") "
+//						+ testDocument.getPath().substring(lastIndex + 1)
+//						+ ">> " + maxClassify);
 				++debugTotal;
 				if (maxClassify == testDocument.getClassify()) {
 					++debugCorrect;
