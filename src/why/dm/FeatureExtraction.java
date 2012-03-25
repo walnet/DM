@@ -54,7 +54,7 @@ public class FeatureExtraction {
 	// 训练文档特有特征（不包括测试文档）
 	private Feature trainingFeature = new Feature();
 	// IDF中的m系数
-	public static final double IDF_M = 10.;
+	public static final double IDF_M = 4.;
 
 	/******************* 以上为训练文档相关 ********************/
 

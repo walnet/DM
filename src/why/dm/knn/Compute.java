@@ -78,10 +78,15 @@ public class Compute {
 	 *            文档2
 	 * @param dimension
 	 *            文档的维度数
+	 * @param whetherUseIdfs
+	 *            是否使用idfs,true为是
+	 * @param idfs
+	 *            idfs的集合，如果不使用它，可以传入NULL
 	 * @return 2个文档的距离
 	 */
-	public static Double computeDistanceByProduct(Document d1, Document d2) {
-		return computeDistanceByProduct(d1.getHits(), d2);
+	public static Double computeDistanceByProduct(Document d1, Document d2,
+			boolean whetherUseIdfs, HashMap<Integer, Double> idfs) {
+		return computeDistanceByProduct(d1.getHits(), d2, whetherUseIdfs, idfs);
 	}
 
 	/**
@@ -91,21 +96,31 @@ public class Compute {
 	 *            文档1 weiduji
 	 * @param d2
 	 *            文档2
+	 * @param whetherUseIdfs
+	 *            是否使用idfs,true为是
+	 * @param idfs
+	 *            idfs的集合，如果不使用它，可以传入NULL
 	 * @return 2个文档的距离
 	 */
 	public static Double computeDistanceByProduct(
-			HashMap<Integer, Integer> hitsd1, Document d2) {
+			HashMap<Integer, Integer> hitsd1, Document d2,
+			boolean whetherUseIdfs, HashMap<Integer, Double> idfs) {
 		Double res;
 		HashMap<Integer, Integer> hitsd2 = d2.getHits();
 
 		Integer j, k;// temporarily store the value
+		Double d;
 		int sum = 0;
 		Iterator<Integer> iterator = hitsd1.keySet().iterator();
 		while (iterator.hasNext()) {
 			Integer key = iterator.next();
 			j = hitsd1.get(key);
 			if (null != (k = hitsd2.get(key))) {
-				sum += k * j;
+				if (whetherUseIdfs) {// 使用IDFS
+					d = idfs.get(key);
+					sum += k * j * d;
+				} else
+					sum += k * j;
 			}
 		}
 		res = sum + 0.0;
@@ -119,10 +134,15 @@ public class Compute {
 	 *            文档的维度集合
 	 * @param cp
 	 *            中心点
+	 * @param whetherUseIdfs
+	 *            是否使用idfs,true为是
+	 * @param idfs
+	 *            idfs的集合，如果不使用它，可以传入NULL
 	 * @return 乘积
 	 */
 	public static Double computeProductWithCenterPoint(
-			HashMap<Integer, Integer> docHits, CenterPoint cp) {
+			HashMap<Integer, Integer> docHits, CenterPoint cp,
+			boolean whetherUseIdfs, HashMap<Integer, Double> idfs) {
 		HashMap<Integer, Double> hitsd2 = cp.getNewHits();
 
 		Integer j;// temporarily store the value
@@ -133,8 +153,15 @@ public class Compute {
 			Integer key = (Integer) testDocHistIterator.next();
 			j = docHits.get(key);
 			k = hitsd2.get(key);
-			if (k != null)
-				sum += k * j;
+			if (k != null) {
+				if (whetherUseIdfs) {
+					if (idfs.containsKey(key))
+						sum += k * j * idfs.get(key);
+					// else 如果不包含这个维度的IDFS，则置为0
+					// sum += 0;
+				} else
+					sum += k * j;
+			}
 		}
 		return sum;
 	}
@@ -202,15 +229,28 @@ public class Compute {
 	 * 
 	 * @param doc
 	 *            文档
+	 * @param whetherUseIdfs
+	 *            是否使用idfs,true为是
+	 * @param idfs
+	 *            idfs的集合，如果不使用它，可以传入NULL
 	 */
-	public static void computeDocLength(Document doc) {
+	public static void computeDocLength(Document doc, boolean whetherUseIdfs,
+			HashMap<Integer, Double> idfs) {
 		HashMap<Integer, Integer> dochits = doc.getHits();
 		Set<Integer> set = dochits.keySet();
 		Iterator<Integer> it = set.iterator();
 		Double ss = 0.0;
-		int temp;
+		Double temp;
 		while (it.hasNext()) {
-			temp = dochits.get(it.next());
+			Integer key = it.next();
+			temp = dochits.get(key) + 0.0;
+
+			if (whetherUseIdfs) {// 是否使用idfs
+				if (idfs.containsKey(key))
+					temp = temp * idfs.get(key);// 乘上idfs
+				else
+					temp = 0.0;// 如果没有对应的维度，则置为0
+			}
 			ss += temp * temp;
 		}
 		doc.setLength(Math.sqrt(ss));
@@ -441,11 +481,18 @@ public class Compute {
 	 *            文档长度
 	 * @param cp
 	 *            中心点
+	 * @param whetherUseIdfs
+	 *            是否使用idfs,true为是
+	 * @param idfs
+	 *            idfs的集合，如果不使用它，可以传入NULL
 	 * @return 余弦值
 	 */
 	public static Double computeSimWithCenterPointByCos(
-			HashMap<Integer, Integer> docHits, Double docLength, CenterPoint cp) {
-		Double numerator = computeProductWithCenterPoint(docHits, cp);// 分子
+			HashMap<Integer, Integer> docHits, Double docLength,
+			CenterPoint cp, boolean whetherUseIdfs,
+			HashMap<Integer, Double> idfs) {
+		Double numerator = computeProductWithCenterPoint(docHits, cp,
+				whetherUseIdfs, idfs);// 分子
 		Double denominator = docLength * cp.getLength();// 分母
 		if (0 >= denominator) {
 			throw new ArithmeticException();

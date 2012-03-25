@@ -73,7 +73,8 @@ public class ComputeAllDocuments {
 
 			for (int m = k + 1; m < docList.size(); m++) {
 				Document tempDoc = docList.get(m);
-				Double len = Compute.computeDistanceByProduct(doc, tempDoc);// 计算2文档间的距离
+				Double len = Compute.computeDistanceByProduct(doc, tempDoc,
+						false, null);// 计算2文档间的距离,不使用IDFS
 				distances[k][m] = len;// 赋值
 				DocumentDouble di = new DocumentDouble(tempDoc, len);
 				documentDistances.add(di);
@@ -116,9 +117,9 @@ public class ComputeAllDocuments {
 		int numOfTestDocs = testDocs.size();
 		// DocDIDescComparator comparator = new DocDIDescComparator();
 		Document testDocument = null;
-		//Document lastTestDocument = null;
+		// Document lastTestDocument = null;
 		while (testIterator.hasNext()) {
-			//lastTestDocument = testDocument;
+			// lastTestDocument = testDocument;
 			testDocument = testIterator.next();
 			// Set<DocumentDouble> docDIs = new
 			// TreeSet<DocumentDouble>(comparator);// 自定义比较规则,使其降序排列
@@ -126,9 +127,9 @@ public class ComputeAllDocuments {
 			trainIterator = docList.iterator();// 训练集合iterator
 			while (trainIterator.hasNext()) {
 				Document trainDoc = (Document) trainIterator.next();
-				DocumentDouble di = new DocumentDouble(
-						trainDoc,
-						Compute.computeDistanceByProduct(testDocument, trainDoc));
+				DocumentDouble di = new DocumentDouble(trainDoc,
+						Compute.computeDistanceByProduct(testDocument,
+								trainDoc, true, trainingFeature.getIdfs()));// 使用IDFS
 				documentDistances.add(di);
 			}
 
@@ -142,8 +143,8 @@ public class ComputeAllDocuments {
 			if (guessClassify == realClassify)
 				classsifyRight++;
 
-//			if (null != lastTestDocument)
-//				lastTestDocument.setDocumentDistances(null);
+			// if (null != lastTestDocument)
+			// lastTestDocument.setDocumentDistances(null);
 			++currentDocument;
 		}
 		System.out.println("KNN: " + classsifyRight + " correct of total "
@@ -237,10 +238,15 @@ public class ComputeAllDocuments {
 	 *            文档
 	 * @param cps
 	 *            中心点集合
+	 * @param whetherUseIdfs
+	 *            是否使用idfs,true为是
+	 * @param idfs
+	 *            idfs的集合，如果不使用它，可以传入NULL
 	 * @return 预测出的类别序号
 	 */
 	public static int findClassifyByCenterPointsWithCos(Document d,
-			LinkedList<CenterPoint> cps) {
+			LinkedList<CenterPoint> cps, boolean whetherUseIdfs,
+			HashMap<Integer, Double> idfs) {
 		HashMap<Integer, Integer> docHits = d.getHits();
 		Double docLength = d.getLength();
 		Double max = Double.NEGATIVE_INFINITY;// 负无限小
@@ -249,7 +255,7 @@ public class ComputeAllDocuments {
 		while (iterator.hasNext()) {
 			CenterPoint cp = iterator.next();
 			Double tmpDouble = Compute.computeSimWithCenterPointByCos(docHits,
-					docLength, cp);
+					docLength, cp, whetherUseIdfs, idfs);
 			if (tmpDouble > max) {
 				max = tmpDouble;
 				classify = cp.getClassify();
@@ -296,11 +302,16 @@ public class ComputeAllDocuments {
 	 * 
 	 * @param docs
 	 *            文档集合
+	 * @param whetherUseIdfs
+	 *            是否使用idfs,true为是
+	 * @param idfs
+	 *            idfs的集合，如果不使用它，可以传入NULL
 	 */
-	public static void computeLengthOfEachDocs(LinkedList<Document> docs) {
+	public static void computeLengthOfEachDocs(LinkedList<Document> docs,
+			boolean whetherUseIdfs, HashMap<Integer, Double> idfs) {
 		Iterator<Document> iterator = docs.iterator();
 		while (iterator.hasNext()) {
-			Compute.computeDocLength(iterator.next());
+			Compute.computeDocLength(iterator.next(), whetherUseIdfs, idfs);
 		}
 	}
 

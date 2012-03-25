@@ -36,7 +36,8 @@ public class CenterPointCos extends Classifier {
 		redirectToNewOutput("test_" + debugFileName + ".txt");
 		System.out.println("预测结果：");
 		LinkedList<Document> testDocs = featureExtraction.getTestDocuments();
-		ComputeAllDocuments.computeLengthOfEachDocs(testDocs);// 服务于cos值的相似度，其他的可以注释掉
+		ComputeAllDocuments.computeLengthOfEachDocs(testDocs, true,
+				featureExtraction.getTrainingFeature().getIdfs());// 服务于cos值的相似度，其他的可以注释掉,使用IDFS
 		int forecastRight = 0;
 		int current = 0;
 		Iterator<Document> iterator = testDocs.iterator();
@@ -44,7 +45,8 @@ public class CenterPointCos extends Classifier {
 		while (iterator.hasNext()) {
 			Document doc = iterator.next();
 			int forecastClassify = ComputeAllDocuments
-					.findClassifyByCenterPointsWithCos(doc, centerPoints);
+					.findClassifyByCenterPointsWithCos(doc, centerPoints, true,
+							featureExtraction.getTrainingFeature().getIdfs());
 			// .findClassifyByCenterPoints(doc, cps, dimension);// 预测的所属类
 			if (0 == current % 40)
 				System.out.print(current + " ");// System.out.print(doc.getPath()+"-----准确类别="+doc.getClassify()+";  预测的类别="+forecastClassify);
@@ -84,7 +86,8 @@ public class CenterPointCos extends Classifier {
 		redirectToNewOutput("train_" + debugFileName + ".txt");
 		Feature trainingFeature = featureExtraction.getTrainingFeature();
 		ComputeAllDocuments.computeAllCenterPointsByAverage(centerPoints,
-				trainingFeature.getClassifyDocuments(), false,false,null);// 中心点集合trainingFeature.getIdfs()
+				trainingFeature.getClassifyDocuments(), false, true,
+				trainingFeature.getIdfs());// 中心点集合
 		System.out.println("CenterPoints size: " + centerPoints.size());
 		redirectToOldOutput();
 	}
