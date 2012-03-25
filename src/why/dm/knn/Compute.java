@@ -395,7 +395,7 @@ public class Compute {
 			Integer cpkey = (Integer) cpKeyiIterator.next();
 			Double tmp = cpHits.get(cpkey) / numOfDocs;
 			if (whetherUseIdfs) {// 如果使用idfs，则执行下一句
-				System.out.println(cpkey + "---size of idfs: " + idfs.size());
+				//System.out.println(cpkey + "---size of idfs: " + idfs.size());
 				tmp = tmp * idfs.get(cpkey);// 乘以相应的权重idfs
 			}
 			cpHits.put(cpkey, tmp);

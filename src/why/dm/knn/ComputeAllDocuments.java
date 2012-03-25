@@ -129,7 +129,7 @@ public class ComputeAllDocuments {
 				Document trainDoc = (Document) trainIterator.next();
 				DocumentDouble di = new DocumentDouble(trainDoc,
 						Compute.computeDistanceByProduct(testDocument,
-								trainDoc, true, trainingFeature.getIdfs()));// 使用IDFS
+								trainDoc, false, trainingFeature.getIdfs()));// 使用IDFS
 				documentDistances.add(di);
 			}
 
