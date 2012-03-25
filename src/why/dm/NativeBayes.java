@@ -68,7 +68,8 @@ public class NativeBayes extends Classifier {
 		// 累乘转成log累加
 		// double pwc = 1;
 		double pwc = 0;
-		Iterator<Integer> termIterator = testDocument.getHits().keySet().iterator();
+		Iterator<Integer> termIterator = testDocument.getHits().keySet()
+				.iterator();
 		while (termIterator.hasNext()) {
 			Integer currentTerm;
 			currentTerm = termIterator.next();
