@@ -85,7 +85,7 @@ public class CenterPointProductAndUnification extends Classifier {
 		redirectToNewOutput("train_" + debugFileName + ".txt");
 		Feature trainingFeature = featureExtraction.getTrainingFeature();
 		ComputeAllDocuments.computeAllCenterPointsByAverage(centerPoints,
-				trainingFeature.getClassifyDocuments(), true, false, null);// 中心点集合
+				trainingFeature.getClassifyDocuments(), false,true,trainingFeature.getIdfs());// 中心点集合，不使用中心点归一化
 		System.out.println("CenterPoints size: " + centerPoints.size());
 		redirectToOldOutput();
 	}
