@@ -77,12 +77,12 @@ public final class Main {
 			// featureExtraction.traceTerm();
 
 			// Naive Bayes classification
-			/*System.out.println("Naive Bayes...");
+			System.out.println("Naive Bayes...");
 			nativeBayes.clear();
 			nativeBayes.setDebugFileName("native_bayes_" + testPartString);
 			nativeBayes.setFeatureExtraction(featureExtraction);
 			nativeBayes.train();
-			nativeBayes.test();*/
+			nativeBayes.test();
 
 			// BP ANN classification System.out.println("BP ANN...");
 //			bpAnn.clear();
@@ -113,12 +113,12 @@ public final class Main {
 			centerPointProductAndUnification.test();*/
 
 			// KNN classification
-			System.out.println("KNN...");
-			knn.clear();
-			knn.setDebugFileName("knn_" + testPartString);
-			knn.setFeatureExtraction(featureExtraction);
-			knn.train();
-			knn.test();
+//			System.out.println("KNN...");
+//			knn.clear();
+//			knn.setDebugFileName("knn_" + testPartString);
+//			knn.setFeatureExtraction(featureExtraction);
+//			knn.train();
+//			knn.test();
 
 		}
 

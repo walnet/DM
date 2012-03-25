@@ -118,16 +118,16 @@ public class NativeBayes extends Classifier {
 			// classifyDiffs.add(diff.value);
 			// classifyTotals.add(total.value);
 			if (debugTrace) {
-				System.out.println(classify
-						+ ">> Pc:"
-						+ Pcs.get(classify)
-						+ "; diff: "
-						+ featureExtraction.getTrainingFeature()
-								.getClassifyHits().get(classify).keySet()
-								.size()
-						+ "; total: "
-						+ featureExtraction.getTrainingFeature()
-								.getClassifyTotalHits().get(classify) + ".");
+//				System.out.println(classify
+//						+ ">> Pc:"
+//						+ Pcs.get(classify)
+//						+ "; diff: "
+//						+ featureExtraction.getTrainingFeature()
+//								.getClassifyHits().get(classify).keySet()
+//								.size()
+//						+ "; total: "
+//						+ featureExtraction.getTrainingFeature()
+//								.getClassifyTotalHits().get(classify) + ".");
 			}
 		}
 		if (debugTrace) {
@@ -150,13 +150,13 @@ public class NativeBayes extends Classifier {
 				}
 			}
 			if (debugTrace) {
-				int lastIndex = testDocument.getPath().lastIndexOf('\\');
-				int lastIndex2 = testDocument.getPath().lastIndexOf('/');
-				if (lastIndex2 > lastIndex)
-					lastIndex = lastIndex2;
-				System.out.println("(" + testDocument.getClassify() + ") "
-						+ testDocument.getPath().substring(lastIndex + 1)
-						+ ">> " + maxClassify);
+//				int lastIndex = testDocument.getPath().lastIndexOf('\\');
+//				int lastIndex2 = testDocument.getPath().lastIndexOf('/');
+//				if (lastIndex2 > lastIndex)
+//					lastIndex = lastIndex2;
+//				System.out.println("(" + testDocument.getClassify() + ") "
+//						+ testDocument.getPath().substring(lastIndex + 1)
+//						+ ">> " + maxClassify);
 				++debugTotal;
 				if (maxClassify == testDocument.getClassify()) {
 					++debugCorrect;
