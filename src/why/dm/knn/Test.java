@@ -12,6 +12,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import why.dm.Document;
+import why.dm.util.DocumentDouble;
+
 /**
  * 
  * @author qinhuiwang
@@ -32,18 +35,20 @@ public class Test {
 		 * }
 		 */
 
-		/*
-		 * Set<DocDI> set = new TreeSet<DocDI>(new DocDIComparator());
-		 * set.add(new DocDI(1, 9.99)); set.add(new DocDI(2, 4.321));
-		 * set.add(new DocDI(3, 5.678)); set.add(new DocDI(4, 8.324));
-		 * set.add(new DocDI(5, 6.789)); set.add(new DocDI(6, 5.678));
-		 * set.add(new DocDI(7, 6.766));
-		 * 
-		 * Iterator it=set.iterator(); while (it.hasNext()) { DocDI i =
-		 * (DocDI)it.next(); System.out.println(i.index+":"+i.distance);
-		 * 
-		 * }
-		 */
+		
+		 /* Set<DocumentDouble> set = new TreeSet<DocumentDouble>();
+		  Document doc =new Document();
+		  set.add(new DocumentDouble(doc, 9.99)); set.add(new DocumentDouble(doc, 4.321));
+		  set.add(new DocumentDouble(doc, 5.678)); set.add(new DocumentDouble(doc, 8.324));
+		  set.add(new DocumentDouble(doc, 6.789)); set.add(new DocumentDouble(doc, 5.678));
+		  set.add(new DocumentDouble(doc, 6.766));
+		  
+		  Iterator setit=set.iterator(); while (setit.hasNext()) {
+			  DocumentDouble i = (DocumentDouble)setit.next(); 
+			  System.out.println("distance: "+i.distance);
+		  
+		  }*/
+		 
 		if (4 >= 4)
 			System.out.println(">= good job");
 
