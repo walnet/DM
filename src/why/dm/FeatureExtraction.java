@@ -401,6 +401,10 @@ public class FeatureExtraction {
 			++copied;
 		}
 	}
+	
+	public void selectTestDocuments() {
+		selectTestDocuments(0);
+	}
 
 	public void selectTestDocuments(int testPart) {
 		// boolean testFull = false;

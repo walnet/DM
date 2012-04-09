@@ -47,8 +47,8 @@ public abstract class Classifier {
 	private int[][] resultMatrix = null;
 	private double[][] resultRatioMatrix = null;
 	
-	protected static final String OUTPUT_CHART_PATH = "outputTEST/chart/";
-	protected static final String OUTPUT_DATA_PATH = "outputTEST/data/";
+	protected static final String OUTPUT_CHART_PATH = "output/chart/";
+	protected static final String OUTPUT_DATA_PATH = "output/data/";
 	private static final String ERROR_RESULT_MATRIX_NOT_INIT = "ERROR: You have to init resultMaxtix!";
 
 	public abstract void clear();
