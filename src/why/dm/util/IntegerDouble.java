@@ -3,6 +3,7 @@
  */
 package why.dm.util;
 
+
 /**
  * The integer double class
  * 
@@ -44,4 +45,12 @@ public class IntegerDouble implements Comparable<IntegerDouble> {
 	public void setIntValue(int value) {
 		intValue = value;
 	}
+	
+	public static void main(String[] args) {
+		String aString;
+		//if(aString!=null & aString.length())
+			//System.out.println();
+        //System.out.print(args[1]+args[2]+args[3]);
+        
+    }
 }

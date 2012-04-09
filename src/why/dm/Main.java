@@ -53,7 +53,7 @@ public final class Main {
 		FeatureExtraction featureExtraction = new FeatureExtraction();
 		System.out.println("Read Files:");
 		featureExtraction.readFiles("runtime/newgroups");
-		int totalTestPart = 10;
+		int totalTestPart = 1;
 		featureExtraction.setTestProportion(1. / totalTestPart);
 		NativeBayes nativeBayes = new NativeBayes();
 		// BpAnn bpAnn = new BpAnn();
@@ -75,14 +75,15 @@ public final class Main {
 			featureExtraction.selectFeature();
 			// System.out.println();
 			// featureExtraction.traceTerm();
+			System.out.println("the size of testDocs: "+featureExtraction.getTestDocuments().size());
 
 			// Naive Bayes classification
-			System.out.println("Naive Bayes...");
+			/*System.out.println("Naive Bayes...");
 			nativeBayes.clear();
 			nativeBayes.setDebugFileName("native_bayes_" + testPartString);
 			nativeBayes.setFeatureExtraction(featureExtraction);
 			nativeBayes.train();
-			nativeBayes.test();
+			nativeBayes.test();*/
 
 			// BP ANN classification System.out.println("BP ANN...");
 //			bpAnn.clear();
