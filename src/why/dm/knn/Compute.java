@@ -19,7 +19,7 @@ import why.dm.util.DocumentDouble;
  * @author qinhuiwang 该类用于放置KNN所需的各种计算方法
  */
 public class Compute {
-	public static int NUM_KNN = 2000;// knn算法中取出最近的NUM_KNN个点（即文档）
+	public static int NUM_KNN = 20;// knn算法中取出最近的NUM_KNN个点（即文档）
 
 	/**
 	 * 用各维度相减的差的平方和再开平方根作为文档的距离
@@ -504,7 +504,7 @@ public class Compute {
 	}
 
 	/**
-	 * 通过KNN（最邻近的K个文档中，拥有最多文档的类别）方法来计算文档所属的类
+	 * 通过KNN（最邻近的K个文档中，距离和最大的类别）方法来计算文档所属的类
 	 * 
 	 * @param doc
 	 *            测试文档
@@ -514,10 +514,10 @@ public class Compute {
 	 */
 	public static int findClassifyByKnnWithProduct(Document doc,
 			int NumOfClassify) {
-		List<Integer> classifyList = new ArrayList<>();// 存储每个类别出现的文档个数，索引为类别的序号，值为出现的文档个数
+		List<Double> classifyList = new ArrayList<>();// 存储每个类别出现的文档个数，索引为类别的序号，值为出现的文档个数
 		int size = classifyList.size();
 		for (int i = 0; i < NumOfClassify; i++)
-			classifyList.add(0);// 初始化为0
+			classifyList.add(0.0);// 初始化为0
 		Set<DocumentDouble> documentDistances = doc.getDocumentDistances();// 距离（或相似度）和文档（指针）的集合
 		Iterator<DocumentDouble> iteratorDocumentDistances = documentDistances
 				.iterator();
@@ -526,16 +526,16 @@ public class Compute {
 			DocumentDouble documentDistance = (DocumentDouble) iteratorDocumentDistances
 					.next();
 			int classifyTemp = documentDistance.document.getClassify();
-			classifyList.set(classifyTemp, classifyList.get(classifyTemp) + 1);// 根据取出的文档类别对统计数组进行加1
+			classifyList.set(classifyTemp, classifyList.get(classifyTemp) + documentDistance.distance);// 根据取出的文档类别对统计数组进行加1
 			k++;
 		}
 
-		int max = -2;
+		Double max = -2.0;
 		int classify = -3;
 		for (int i = 0; i < NumOfClassify; i++) {
-			int NumOfOneClassify = classifyList.get(i);// 获得每个类别统计的文档个数
-			if (NumOfOneClassify > max) {
-				max = NumOfOneClassify;
+			Double sumOfDistanceInOneClassify = classifyList.get(i);// 获得每个类别统计的文档个数
+			if (sumOfDistanceInOneClassify > max) {
+				max = sumOfDistanceInOneClassify;
 				classify = i;
 			}
 		}

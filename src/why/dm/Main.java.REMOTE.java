@@ -57,14 +57,13 @@ public final class Main {
 
 	private static void cluster(FeatureExtraction featureExtraction) {
 		Date begin = new Date();
-		// int totalTestPart = 1;
-		// featureExtraction.setTestProportion(1. / totalTestPart);
-		// featureExtraction.selectTestDocuments();
-		featureExtraction.selectTestDocuments(-1);	// -1表示全部都是训练集
+		int totalTestPart = 1;
+		featureExtraction.setTestProportion(1. / totalTestPart);
+		featureExtraction.selectTestDocuments();
 		Date end = new Date();
 		// Show time difference
 		printTime(end.getTime() - begin.getTime());
-		System.out.print(featureExtraction.getTrainingFeature().getDocuments().size());
+		//System.out.print(featureExtraction.getTestDocuments().size());
 	}
 
 	private static void classification(FeatureExtraction featureExtraction) {
@@ -91,15 +90,14 @@ public final class Main {
 			featureExtraction.selectFeature();
 			// System.out.println();
 			// featureExtraction.traceTerm();
-			System.out.println("the size of testDocs: "+featureExtraction.getTestDocuments().size());
 
 			// Naive Bayes classification
-			/*System.out.println("Naive Bayes...");
+			System.out.println("Naive Bayes...");
 			nativeBayes.clear();
 			nativeBayes.setDebugFileName("native_bayes_" + testPartString);
 			nativeBayes.setFeatureExtraction(featureExtraction);
 			nativeBayes.train();
-			nativeBayes.test();*/
+			nativeBayes.test();
 
 			// BP ANN classification System.out.println("BP ANN...");
 			// bpAnn.clear();
@@ -161,7 +159,7 @@ public final class Main {
 		// Show time spent
 		printTime(end.getTime() - begin.getTime());
 	}
-
+	
 	private static void printTime(long l) {
 		long day = l / (24 * 60 * 60 * 1000);
 		long hour = (l / (60 * 60 * 1000) - day * 24);

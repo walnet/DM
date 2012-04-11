@@ -30,6 +30,8 @@ public final class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		Date begin = new Date();
+
 		/*
 		 * // Plot //double[] x = randomNormal(100, 0, 1); // 1000 random
 		 * numbers from a normal (Gaussian) statistical law //double[] y =
@@ -51,24 +53,6 @@ public final class Main {
 		FeatureExtraction featureExtraction = new FeatureExtraction();
 		System.out.println("Read Files:");
 		featureExtraction.readFiles("runtime/newgroups");
-		cluster(featureExtraction);
-		// classification(featureExtraction);
-	}
-
-	private static void cluster(FeatureExtraction featureExtraction) {
-		Date begin = new Date();
-		// int totalTestPart = 1;
-		// featureExtraction.setTestProportion(1. / totalTestPart);
-		// featureExtraction.selectTestDocuments();
-		featureExtraction.selectTestDocuments(-1);	// -1表示全部都是训练集
-		Date end = new Date();
-		// Show time difference
-		printTime(end.getTime() - begin.getTime());
-		System.out.print(featureExtraction.getTrainingFeature().getDocuments().size());
-	}
-
-	private static void classification(FeatureExtraction featureExtraction) {
-		Date begin = new Date();
 		int totalTestPart = 10;
 		featureExtraction.setTestProportion(1. / totalTestPart);
 		NativeBayes nativeBayes = new NativeBayes();
@@ -91,35 +75,34 @@ public final class Main {
 			featureExtraction.selectFeature();
 			// System.out.println();
 			// featureExtraction.traceTerm();
-			System.out.println("the size of testDocs: "+featureExtraction.getTestDocuments().size());
 
 			// Naive Bayes classification
-			/*System.out.println("Naive Bayes...");
+			System.out.println("Naive Bayes...");
 			nativeBayes.clear();
 			nativeBayes.setDebugFileName("native_bayes_" + testPartString);
 			nativeBayes.setFeatureExtraction(featureExtraction);
 			nativeBayes.train();
-			nativeBayes.test();*/
+			nativeBayes.test();
 
 			// BP ANN classification System.out.println("BP ANN...");
-			// bpAnn.clear();
-			// bpAnn.setDebugFileName("bp_ann_" + testPartString);
-			// bpAnn.setFeatureExtraction(featureExtraction);
-			// bpAnn.train();
-			// bpAnn.test();
+//			bpAnn.clear();
+//			bpAnn.setDebugFileName("bp_ann_" + testPartString);
+//			bpAnn.setFeatureExtraction(featureExtraction);
+//			bpAnn.train();
+//			bpAnn.test();
 
-			// System.out.println("All of the doc size"+featureExtraction.getTerms().size()+"; all of train doc size:"+featureExtraction.getTrainingFeature().getHits().size());
+			//System.out.println("All of the doc size"+featureExtraction.getTerms().size()+"; all of train doc size:"+featureExtraction.getTrainingFeature().getHits().size());
 			// Center point cosine classification
-			System.out.println("Center point cosine...");
+			/*System.out.println("Center point cosine...");
 			centerPointCos.clear();
 			centerPointCos.setDebugFileName("center_point_cos_"
 					+ testPartString);
 			centerPointCos.setFeatureExtraction(featureExtraction);
 			centerPointCos.train();
-			centerPointCos.test();
+			centerPointCos.test();*/
 
 			// Center point product and unification classification
-			System.out.println("Center point product and unification...");
+			/*System.out.println("Center point product and unification...");
 			centerPointProductAndUnification.clear();
 			centerPointProductAndUnification
 					.setDebugFileName("center_point_product_and_unification_"
@@ -127,15 +110,15 @@ public final class Main {
 			centerPointProductAndUnification
 					.setFeatureExtraction(featureExtraction);
 			centerPointProductAndUnification.train();
-			centerPointProductAndUnification.test();
+			centerPointProductAndUnification.test();*/
 
 			// KNN classification
-			System.out.println("KNN...");
+			/*System.out.println("KNN...");
 			knn.clear();
 			knn.setDebugFileName("knn_" + testPartString);
 			knn.setFeatureExtraction(featureExtraction);
 			knn.train();
-			knn.test();
+			knn.test();*/
 
 		}
 
@@ -159,10 +142,7 @@ public final class Main {
 		 * e.getMessage()); }
 		 */
 		// Show time spent
-		printTime(end.getTime() - begin.getTime());
-	}
-
-	private static void printTime(long l) {
+		long l = end.getTime() - begin.getTime();
 		long day = l / (24 * 60 * 60 * 1000);
 		long hour = (l / (60 * 60 * 1000) - day * 24);
 		long minute = ((l / (60 * 1000)) - day * 24 * 60 - hour * 60);
