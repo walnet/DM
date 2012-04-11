@@ -60,11 +60,12 @@ public final class Main {
 		// int totalTestPart = 1;
 		// featureExtraction.setTestProportion(1. / totalTestPart);
 		// featureExtraction.selectTestDocuments();
-		featureExtraction.selectTestDocuments(-1);	// -1表示全部都是训练集
+		featureExtraction.selectTestDocuments(-1); // -1表示全部都是训练集
 		Date end = new Date();
 		// Show time difference
 		printTime(end.getTime() - begin.getTime());
-		System.out.print(featureExtraction.getTrainingFeature().getDocuments().size());
+		System.out.print(featureExtraction.getTrainingFeature().getDocuments()
+				.size());
 	}
 
 	private static void classification(FeatureExtraction featureExtraction) {
@@ -91,15 +92,16 @@ public final class Main {
 			featureExtraction.selectFeature();
 			// System.out.println();
 			// featureExtraction.traceTerm();
-			System.out.println("the size of testDocs: "+featureExtraction.getTestDocuments().size());
+			System.out.println("the size of testDocs: "
+					+ featureExtraction.getTestDocuments().size());
 
 			// Naive Bayes classification
-			/*System.out.println("Naive Bayes...");
-			nativeBayes.clear();
-			nativeBayes.setDebugFileName("native_bayes_" + testPartString);
-			nativeBayes.setFeatureExtraction(featureExtraction);
-			nativeBayes.train();
-			nativeBayes.test();*/
+			// System.out.println("Naive Bayes...");
+			// nativeBayes.clear();
+			// nativeBayes.setDebugFileName("native_bayes_" + testPartString);
+			// nativeBayes.setFeatureExtraction(featureExtraction);
+			// nativeBayes.train();
+			// nativeBayes.test();
 
 			// BP ANN classification System.out.println("BP ANN...");
 			// bpAnn.clear();
