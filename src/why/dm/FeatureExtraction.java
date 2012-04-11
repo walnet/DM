@@ -402,10 +402,21 @@ public class FeatureExtraction {
 		}
 	}
 	
+
+	/**
+	 * 选择测试集和训练集
+	 */
 	public void selectTestDocuments() {
 		selectTestDocuments(0);
 	}
 
+	/**
+	 * 选择测试集和训练集
+	 * 
+	 * @param testPart
+	 *            现在选择第几份
+	 *            -1表示全部都是训练集
+	 */
 	public void selectTestDocuments(int testPart) {
 		// boolean testFull = false;
 		testDocuments.clear();
@@ -434,7 +445,8 @@ public class FeatureExtraction {
 				currentDocument = documentIterator.next();
 				int partSize = (int) (currentClassifyDocuments.size() * testProportion);
 				int partBegin = partSize * testPart;
-				if (partBegin <= processed && partBegin + partSize > processed) {
+				// testPart == -1表示全部都是训练集
+				if (0 < testPart && partBegin <= processed && partBegin + partSize > processed) {
 					testDocuments.add(currentDocument);
 				} else {
 					classifyDocuments.get(classify).add(currentDocument);
